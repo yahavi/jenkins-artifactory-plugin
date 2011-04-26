@@ -44,8 +44,8 @@ public class GradleReleaseAction extends ReleaseAction {
 
     private final transient FreeStyleProject project;
 
-    private transient Map<String, String> versionProps;
-    private transient Map<String, String> additionalProps;
+    private transient Map<String, String> releaseProps;
+    private transient Map<String, String> nextIntegProps;
     /**
      * Map of release versions per module. Only used if versioning is per module
      */
@@ -60,12 +60,12 @@ public class GradleReleaseAction extends ReleaseAction {
         this.project = project;
     }
 
-    public String[] getVersionProperties() {
-        return getReleaseWrapper().getVersionPropsKeysList();
+    public String[] getReleaseProperties() {
+        return getReleaseWrapper().getReleasePropsKeysList();
     }
 
-    public String[] getAdditionalProperties() {
-        return getReleaseWrapper().getAdditionalPropsKeysList();
+    public String[] getNextIntegProperties() {
+        return getReleaseWrapper().getNextIntegPropsKeysList();
     }
 
     /**
@@ -78,12 +78,12 @@ public class GradleReleaseAction extends ReleaseAction {
             throw new IllegalStateException("No workspace found, cannot perform staging");
         }
         FilePath gradlePropertiesPath = new FilePath(workspace, "gradle.properties");
-        if (versionProps == null) {
-            versionProps = PropertyUtils.getModulesPropertiesFromPropFile(gradlePropertiesPath, getVersionProperties());
+        if (releaseProps == null) {
+            releaseProps = PropertyUtils.getModulesPropertiesFromPropFile(gradlePropertiesPath, getReleaseProperties());
         }
-        if (additionalProps == null) {
-            additionalProps =
-                    PropertyUtils.getModulesPropertiesFromPropFile(gradlePropertiesPath, getAdditionalProperties());
+        if (nextIntegProps == null) {
+            nextIntegProps =
+                    PropertyUtils.getModulesPropertiesFromPropFile(gradlePropertiesPath, getNextIntegProperties());
         }
     }
 
@@ -108,8 +108,8 @@ public class GradleReleaseAction extends ReleaseAction {
      * config or during startup, therefore a cleanup of the internal maps is needed.</p>
      */
     public void reset() {
-        versionProps = null;
-        additionalProps = null;
+        releaseProps = null;
+        nextIntegProps = null;
         releaseVersion = null;
     }
 
@@ -170,10 +170,10 @@ public class GradleReleaseAction extends ReleaseAction {
 
     @Override
     public String getCurrentVersion() {
-        if (versionProps == null) {
+        if (releaseProps == null) {
             return "";
         }
-        return versionProps.values().iterator().next();
+        return releaseProps.values().iterator().next();
     }
 
     @Override
@@ -199,16 +199,20 @@ public class GradleReleaseAction extends ReleaseAction {
 
     @SuppressWarnings({"UnusedDeclaration"})
     public String getValueForProp(String prop) {
-        return additionalProps.get(prop);
+        return nextIntegProps.get(prop);
     }
 
     @Override
     public String calculateReleaseVersion(String fromVersion) {
-        String version = versionProps.get(fromVersion);
+        String version = releaseProps.get(fromVersion);
         if (StringUtils.isNotBlank(version)) {
             return super.calculateReleaseVersion(version);
         }
         return "";
+    }
+
+    public String getCurrentVersionFor(String moduleName) {
+        return releaseProps.get(moduleName);
     }
 
     @Override
