@@ -29,6 +29,7 @@ import org.jfrog.hudson.release.scm.svn.SubversionManager;
 import org.jfrog.hudson.util.PropertyUtils;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -170,10 +171,39 @@ public class GradleReleaseAction extends ReleaseAction {
 
     @Override
     public String getCurrentVersion() {
-        if (releaseProps == null) {
+        String version = extractNumericVersion(releaseProps.values());
+        if (StringUtils.isBlank(version)) {
+            version = extractNumericVersion(nextIntegProps.values());
+        }
+        return version;
+    }
+
+    /**
+     * Try to extract a numeric version from a collection of strings. Iterate over all the strings, stripping a snapshot
+     * suffix if any, then split the string using '.' as the separator character, then iterate over the split to see
+     * that all parts are numeric. if they are, return the value.
+     *
+     * @param versionStrings Collection of string properties.
+     * @return The version string if exists in the collection.
+     */
+    private String extractNumericVersion(Collection<String> versionStrings) {
+        if (versionStrings == null) {
             return "";
         }
-        return releaseProps.values().iterator().next();
+        for (String value : versionStrings) {
+            value = StringUtils.removeEnd(value, "-SNAPSHOT");
+            String[] split = StringUtils.split(value, '.');
+            boolean isValid = true;
+            for (String number : split) {
+                if (!StringUtils.isNumeric(number)) {
+                    isValid = false;
+                }
+            }
+            if (isValid) {
+                return value;
+            }
+        }
+        return "";
     }
 
     @Override
@@ -205,6 +235,9 @@ public class GradleReleaseAction extends ReleaseAction {
     @Override
     public String calculateReleaseVersion(String fromVersion) {
         String version = releaseProps.get(fromVersion);
+        if (StringUtils.isBlank(version)) {
+            version = nextIntegProps.get(fromVersion);
+        }
         if (StringUtils.isNotBlank(version)) {
             return super.calculateReleaseVersion(version);
         }

@@ -28,11 +28,11 @@
                         <f:section title="${prop}">
                             <f:entry title="Release value"
                                      help="/plugin/artifactory/help/release/gradle/GradleReleaseAction/help-releaseValue.html">
-                                <f:textbox name="release.${prop}" value="${it.getValueForProp(prop)}"/>
+                                <f:textbox name="release.${prop}" value="${it.calculateReleaseVersion(prop)}"/>
                             </f:entry>
                             <f:entry title="Next Development value"
                                      help="/plugin/artifactory/help/release/gradle/GradleReleaseAction/help-nextDevelopmentValue.html">
-                                <f:textbox name="next.${prop}" value="${it.getValueForProp(prop)}"/>
+                                <f:textbox name="next.${prop}" value="${it.calculateNextVersion(prop)}"/>
                             </f:entry>
                         </f:section>
                     </j:forEach>
