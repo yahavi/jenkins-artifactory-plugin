@@ -30,6 +30,7 @@ import org.jfrog.hudson.action.ActionableHelper;
 import org.jfrog.hudson.release.UnifiedPromoteBuildAction;
 import org.jfrog.hudson.util.Credentials;
 import org.jfrog.hudson.util.IncludesExcludes;
+import org.jfrog.hudson.util.RepositoriesUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -204,6 +205,14 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
             }
         }
         return null;
+    }
+
+    public List<String> getReleaseRepositoryKeysFirst() {
+        return RepositoriesUtils.getReleaseRepositoryKeysFirst(this, getArtifactoryServer());
+    }
+
+    public List<String> getSnapshotRepositoryKeysFirst() {
+        return RepositoriesUtils.getSnapshotRepositoryKeysFirst(this, getArtifactoryServer());
     }
 
     @Override
