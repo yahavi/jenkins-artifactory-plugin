@@ -1,5 +1,7 @@
 package org.jfrog.hudson.pipeline;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Run;
 import hudson.util.ListBoxModel;
 import org.apache.commons.cli.MissingArgumentException;
@@ -61,5 +63,11 @@ public class PipelineUtils {
             return new BuildInfo(build);
         }
         return buildinfo;
+    }
+
+    public static ObjectMapper mapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper;
     }
 }
