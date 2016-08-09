@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by romang on 4/24/16.
  */
-public class PipelineUtils {
+public class Utils {
 
     public static final String BUILD_INFO_DELIMITER = ".";
 
@@ -53,7 +53,7 @@ public class PipelineUtils {
         List<org.jfrog.hudson.ArtifactoryServer> servers = RepositoriesUtils.getArtifactoryServers();
         r.add("", "");
         for (org.jfrog.hudson.ArtifactoryServer server : servers) {
-            r.add(server.getName() + PipelineUtils.BUILD_INFO_DELIMITER + server.getUrl(), server.getName());
+            r.add(server.getName() + Utils.BUILD_INFO_DELIMITER + server.getUrl(), server.getName());
         }
         return r;
     }

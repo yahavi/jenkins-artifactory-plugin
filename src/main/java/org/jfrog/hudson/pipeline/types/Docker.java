@@ -1,9 +1,14 @@
 package org.jfrog.hudson.pipeline.types;
 
+import hudson.model.TaskListener;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
+import org.jfrog.build.api.Module;
+import org.jfrog.hudson.pipeline.ArtifactoryConfigurator;
+import org.jfrog.hudson.pipeline.docker.DockerImage;
 import org.jfrog.hudson.pipeline.docker.DockerUtils;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -13,9 +18,9 @@ import java.util.*;
 public class Docker implements Serializable {
 
     private BuildInfo buildInfo;
+    private Map<String, String> imageIdTags = new HashMap<String, String>();
+    private List<DockerImage> dockerImages = new ArrayList<DockerImage>();
     private CpsScript cpsScript;
-    private Set<String> capturedImages = new HashSet<String>();
-    private Set<String> dockerLayersDependencies = new HashSet<String>();
 
     public Docker(BuildInfo buildInfo) {
         this.buildInfo = buildInfo;
@@ -24,24 +29,39 @@ public class Docker implements Serializable {
     @Whitelisted
     public void capture(String imageTag) {
         Map<String, Object> stepVariables = new LinkedHashMap<String, Object>();
+        String imageId = DockerUtils.getImageTagId(imageTag);
         stepVariables.put("imageTag", imageTag);
         stepVariables.put("imageId", DockerUtils.getImageTagId(imageTag));
         stepVariables.put("buildInfo", buildInfo);
 
-        capturedImages.add(imageTag);
+        imageIdTags.put(imageId, imageTag);
         cpsScript.invokeMethod("registerDockerImageStep", stepVariables);
     }
 
-    @Whitelisted
-    public Set<String> getCaptured() {
-        return capturedImages;
+    public void addCapturedManifest(String manifest) {
+        try {
+            String imageId = DockerUtils.getImageIdFromManifest(manifest);
+            dockerImages.add(new DockerImage(imageId, imageIdTags.get(imageId), manifest));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Module> generateBuildInfoModules(TaskListener listener, ArtifactoryConfigurator config,
+                                                 String buildName, String buildNumber, String timestamp) throws IOException {
+        ArrayList<Module> modules = new ArrayList<Module>();
+        for (DockerImage dockerImage : dockerImages) {
+            modules.add(dockerImage.generateBuildInfoModule(listener, config, buildName, buildNumber, timestamp));
+        }
+        return modules;
     }
 
     public void setCpsScript(CpsScript cpsScript) {
         this.cpsScript = cpsScript;
     }
 
-    public Set<String> getDockerLayersDependencies() {
-        return dockerLayersDependencies;
+    public void append(Docker other) {
+        this.imageIdTags.putAll(other.imageIdTags);
+        this.dockerImages.addAll(other.dockerImages);
     }
 }

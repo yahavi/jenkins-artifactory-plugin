@@ -16,7 +16,7 @@ import org.jfrog.build.extractor.clientConfiguration.util.WildcardDependenciesHe
 import org.jfrog.hudson.ArtifactoryServer;
 import org.jfrog.hudson.CredentialsConfig;
 import org.jfrog.hudson.generic.DependenciesDownloaderImpl;
-import org.jfrog.hudson.pipeline.PipelineUtils;
+import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.json.DownloadUploadJson;
 import org.jfrog.hudson.pipeline.json.FileJson;
 import org.jfrog.hudson.pipeline.types.BuildInfo;
@@ -43,7 +43,7 @@ public class GenericDownloadExecutor {
         this.listener = listener;
         this.log = new JenkinsBuildInfoLog(listener);
         this.build = build;
-        this.buildInfo = PipelineUtils.prepareBuildinfo(build, buildInfo);
+        this.buildInfo = Utils.prepareBuildinfo(build, buildInfo);
         this.ws = ws;
     }
 

@@ -22,7 +22,6 @@ public class BuildInfoFilterAdapter extends HttpFiltersAdapter {
 
     @Override
     public HttpResponse proxyToServerRequest(HttpObject httpObject) {
-        System.out.println("####################" + originalRequest.getUri());
         if (httpObject instanceof ByteBufHolder && originalRequest.getMethod() == HttpMethod.PUT) {
             String contentStr = ((ByteBufHolder) httpObject).content().toString(CharsetUtil.UTF_8);
             DockerUtils.captureContent(contentStr);

@@ -18,7 +18,7 @@ import org.jfrog.build.api.BuildInfoFields;
 import org.jfrog.hudson.ArtifactoryServer;
 import org.jfrog.hudson.action.ActionableHelper;
 import org.jfrog.hudson.generic.GenericArtifactsDeployer;
-import org.jfrog.hudson.pipeline.PipelineUtils;
+import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.json.DownloadUploadJson;
 import org.jfrog.hudson.pipeline.json.FileJson;
 import org.jfrog.hudson.pipeline.types.BuildInfo;
@@ -45,7 +45,7 @@ public class GenericUploadExecutor {
         this.server = server;
         this.listener = listener;
         this.build = build;
-        this.buildinfo = PipelineUtils.prepareBuildinfo(build, buildInfo);
+        this.buildinfo = Utils.prepareBuildinfo(build, buildInfo);
         this.ws = ws;
         this.context = context;
     }

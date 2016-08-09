@@ -8,7 +8,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.hash.Hashing;
 import org.apache.commons.lang.StringUtils;
-import org.jfrog.hudson.pipeline.PipelineUtils;
+import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.docker.proxy.ProxyBuildInfoCallback;
 
 import java.io.IOException;
@@ -25,9 +25,8 @@ public class DockerUtils {
     /**
      * Register to collect buildInfo for specific docker image.
      *
-     * @param imageTag
+     * @param id
      * @param buildInfoCallback
-     * @param log
      */
     public static void registerProxy(String id, ProxyBuildInfoCallback buildInfoCallback) {
         imageTagsToCapture.put(id, new WeakReference<ProxyBuildInfoCallback>(buildInfoCallback));
@@ -35,6 +34,7 @@ public class DockerUtils {
 
     /**
      * Get image Id from imageTag using Docker client
+     *
      * @param imageTag
      * @return
      */
@@ -45,24 +45,26 @@ public class DockerUtils {
 
     /**
      * Pass captured content (manifest.json) from the proxy to buildInfo handler.
+     *
      * @param content
      */
     public static void captureContent(String content) {
-        JsonNode manifest = null;
         try {
-            manifest = PipelineUtils.mapper().readTree(content);
-            String digest = StringUtils.remove(manifest.get("config").get("digest").toString(), "\"");
-
+            String digest = getImageIdFromManifest(content);
             for (WeakReference<ProxyBuildInfoCallback> buildInfo : imageTagsToCapture.get(digest)) {
                 if (buildInfo.get() != null) {
                     buildInfo.get().collectBuildInfo(content);
                 }
             }
             imageTagsToCapture.removeAll(digest);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getImageIdFromManifest(String manifest) throws IOException {
+        JsonNode manifestTree = Utils.mapper().readTree(manifest);
+        return StringUtils.remove(manifestTree.get("config").get("digest").toString(), "\"");
     }
 
     /**
@@ -73,10 +75,8 @@ public class DockerUtils {
      */
     public static List<String> getDockerManifestLayersDigest(String manifestContent) {
         List<String> dockerLayersDependencies = new ArrayList<String>();
-        String manifestSha1 = Hashing.sha1().hashString(manifestContent, Charsets.UTF_8).toString();
-        dockerLayersDependencies.add("sha1:" + manifestSha1);
         try {
-            JsonNode manifest = PipelineUtils.mapper().readTree(manifestContent);
+            JsonNode manifest = Utils.mapper().readTree(manifestContent);
             JsonNode schemaVersion = manifest.get("schemaVersion");
             boolean isSchemeVersion1 = schemaVersion.asInt() == 1;
             JsonNode fsLayers = getFsLayers(manifest, isSchemeVersion1);
@@ -86,6 +86,9 @@ public class DockerUtils {
             }
             dockerLayersDependencies.add(StringUtils.remove(manifest.get("config").get("digest").toString(), "\""));
 
+            //Add manifest sha1
+            String manifestSha1 = Hashing.sha1().hashString(manifestContent, Charsets.UTF_8).toString();
+            dockerLayersDependencies.add("sha1:" + manifestSha1);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -132,5 +135,52 @@ public class DockerUtils {
 
     public static String getShaVersion(String digest) {
         return StringUtils.substring(digest, 0, StringUtils.indexOf(digest, ":"));
+    }
+
+    public static String getPathFromImageTag(String imageTag) {
+        int indexOfFirstSlash = imageTag.indexOf("/");
+        int indexOfLastColon = imageTag.lastIndexOf(":");
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(imageTag.substring(indexOfFirstSlash + 1, indexOfLastColon));
+        stringBuilder.append("/");
+        stringBuilder.append(imageTag.substring(indexOfLastColon + 1));
+
+        return stringBuilder.toString();
+    }
+
+    public static String filenameToDigest(String filename) {
+        return StringUtils.replace(filename, "__", ":");
+    }
+
+    public static String digestToFilename(String digest) {
+        if (StringUtils.startsWith(digest, "sha1")) {
+            return "manifest.json";
+        }
+        return getShaVersion(digest) + "__" + getShaValue(digest);
+    }
+
+    public static int getNumberOfDependentLayers(String imageContent) throws IOException {
+        JsonNode history = Utils.mapper().readTree(imageContent).get("history");
+        int layersNum = history.size();
+        boolean afterLastEntrypoint = true;
+        for (int i = history.size() - 1; i >= 0; i--) {
+
+            if (afterLastEntrypoint) {
+                layersNum--;
+            }
+
+            JsonNode layer = history.get(i);
+            JsonNode emptyLayer = layer.get("empty_layer");
+            if (!afterLastEntrypoint && emptyLayer != null) {
+                layersNum--;
+            }
+
+            String createdBy = layer.get("created_by").textValue();
+            if (createdBy.contains("ENTRYPOINT")) {
+                afterLastEntrypoint = false;
+            }
+        }
+        return layersNum;
     }
 }

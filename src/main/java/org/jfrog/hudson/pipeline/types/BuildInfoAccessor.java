@@ -6,7 +6,7 @@ import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jfrog.build.api.Artifact;
 import org.jfrog.build.api.Dependency;
 import org.jfrog.build.api.dependency.BuildDependency;
-import org.jfrog.hudson.pipeline.PipelineBuildInfoDeployer;
+import org.jfrog.hudson.pipeline.BuildInfoDeployer;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -75,7 +75,7 @@ public class BuildInfoAccessor {
         this.buildInfo.appendDeployedArtifacts(artifacts);
     }
 
-    public PipelineBuildInfoDeployer createDeployer(Run build, TaskListener listener, org.jfrog.hudson.ArtifactoryServer server)
+    public BuildInfoDeployer createDeployer(Run build, TaskListener listener, org.jfrog.hudson.ArtifactoryServer server)
             throws InterruptedException, NoSuchAlgorithmException, IOException {
         return this.buildInfo.createDeployer(build, listener, server);
     }

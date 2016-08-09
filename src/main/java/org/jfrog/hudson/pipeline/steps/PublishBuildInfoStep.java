@@ -6,8 +6,8 @@ import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.steps.*;
-import org.jfrog.hudson.pipeline.PipelineBuildInfoDeployer;
-import org.jfrog.hudson.pipeline.PipelineUtils;
+import org.jfrog.hudson.pipeline.BuildInfoDeployer;
+import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.types.ArtifactoryServer;
 import org.jfrog.hudson.pipeline.types.BuildInfo;
 import org.jfrog.hudson.pipeline.types.BuildInfoAccessor;
@@ -52,7 +52,7 @@ public class PublishBuildInfoStep extends AbstractStepImpl {
         @Override
         protected Boolean run() throws Exception {
             BuildInfoAccessor buildInfo = new BuildInfoAccessor(step.getBuildInfo());
-            PipelineBuildInfoDeployer deployer = buildInfo.createDeployer(build, listener, PipelineUtils.prepareArtifactoryServer(null, step.getServer()));
+            BuildInfoDeployer deployer = buildInfo.createDeployer(build, listener, Utils.prepareArtifactoryServer(null, step.getServer()));
             deployer.deploy();
             return true;
         }
