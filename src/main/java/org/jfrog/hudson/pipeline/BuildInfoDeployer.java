@@ -1,22 +1,19 @@
 package org.jfrog.hudson.pipeline;
 
-import com.google.common.collect.Lists;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.apache.commons.lang.StringUtils;
-import org.jfrog.build.api.*;
+import org.jfrog.build.api.Build;
+import org.jfrog.build.api.BuildInfoProperties;
+import org.jfrog.build.api.BuildType;
 import org.jfrog.build.api.builder.BuildInfoBuilder;
-import org.jfrog.build.api.builder.ModuleBuilder;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
 import org.jfrog.hudson.AbstractBuildInfoDeployer;
 import org.jfrog.hudson.BuildInfoResultAction;
 import org.jfrog.hudson.pipeline.types.BuildInfoAccessor;
-import org.jfrog.hudson.util.ExtractorUtils;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,29 +27,31 @@ public class BuildInfoDeployer extends AbstractBuildInfoDeployer {
     private ArtifactoryConfigurator configurator;
     private Build buildInfo;
 
+    public PipelineBuildInfoDeployer(ArtifactoryPipelineConfigurator configurator, ArtifactoryBuildInfoClient client,
+                                     Run build, TaskListener listener, BuildInfoAccessor buildinfoAccessor) throws IOException, InterruptedException, NoSuchAlgorithmException {
     public BuildInfoDeployer(ArtifactoryConfigurator configurator, ArtifactoryBuildInfoClient client,
                              Run build, TaskListener listener, BuildInfoAccessor buildinfoAccessor) throws IOException, InterruptedException, NoSuchAlgorithmException {
         super(configurator, build, listener, client);
         this.configurator = configurator;
         this.build = build;
-        this.envVars = buildinfoAccessor.getEnvVars();
-        this.sysVars = buildinfoAccessor.getSysVars();
-        this.buildInfo = createBuildInfo("Pipeline", "Pipeline", BuildType.GENERIC);
-        this.buildInfo.setBuildRetention(buildinfoAccessor.getRetention().build());
+        envVars = buildinfoAccessor.getEnvVars();
+        sysVars = buildinfoAccessor.getSysVars();
+        buildInfo = createBuildInfo("Pipeline", "Pipeline", BuildType.GENERIC);
+        buildInfo.setBuildRetention(buildinfoAccessor.getRetention().build());
 
         if (buildinfoAccessor.getStartDate() != null) {
-            this.buildInfo.setStartedDate(buildinfoAccessor.getStartDate());
+            buildInfo.setStartedDate(buildinfoAccessor.getStartDate());
         }
 
-        createDeployDetailsAndAddToBuildInfo(new ArrayList<Artifact>(buildinfoAccessor.getDeployedArtifacts().values()), new ArrayList<Dependency>(buildinfoAccessor.getPublishedDependencies().values()));
+        buildInfo.setModules(buildinfoAccessor.getModules());
         this.buildInfo.setBuildDependencies(buildinfoAccessor.getBuildDependencies());
 
         if (StringUtils.isNotEmpty(buildinfoAccessor.getBuildName())) {
-            this.buildInfo.setName(buildinfoAccessor.getBuildName());
+            buildInfo.setName(buildinfoAccessor.getBuildName());
         }
 
         if (StringUtils.isNotEmpty(buildinfoAccessor.getBuildNumber())) {
-            this.buildInfo.setNumber(buildinfoAccessor.getBuildNumber());
+            buildInfo.setNumber(buildinfoAccessor.getBuildNumber());
         }
     }
 

@@ -14,6 +14,8 @@ import org.jfrog.build.api.Dependency;
 import org.jfrog.build.api.Module;
 import org.jfrog.build.api.builder.ArtifactBuilder;
 import org.jfrog.build.api.builder.DependencyBuilder;
+import org.jfrog.build.api.Module;
+import org.jfrog.build.api.builder.ModuleBuilder;
 import org.jfrog.build.api.dependency.BuildDependency;
 import org.jfrog.build.api.search.AqlSearchResult;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
@@ -26,6 +28,7 @@ import org.jfrog.hudson.pipeline.docker.DockerUtils;
 import org.jfrog.hudson.pipeline.docker.proxy.ProxyBuildInfoCallback;
 import org.jfrog.hudson.util.BuildUniqueIdentifierHelper;
 import org.jfrog.hudson.util.CredentialManager;
+import org.jfrog.hudson.util.ExtractorUtils;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -41,10 +44,11 @@ public class BuildInfo implements Serializable, ProxyBuildInfoCallback {
     private String buildNumber;
     private Date startDate;
     private BuildRetention retention;
-
-    private Map<Artifact, Artifact> deployedArtifacts = new HashMap<Artifact, Artifact>();
     private List<BuildDependency> buildDependencies = new ArrayList<BuildDependency>();
-    private Map<Dependency, Dependency> publishedDependencies = new HashMap<Dependency, Dependency>();
+    private List<Artifact> deployedArtifacts = new ArrayList<Artifact>();
+    private List<Dependency> publishedDependencies = new ArrayList<Dependency>();
+
+    private List<Module> modules = new ArrayList<Module>();
     private Env env = new Env();
 
     private Docker docker = new Docker(this);
@@ -88,8 +92,9 @@ public class BuildInfo implements Serializable, ProxyBuildInfoCallback {
 
     @Whitelisted
     public void append(BuildInfo other) {
-        this.deployedArtifacts.putAll(other.deployedArtifacts);
-        this.publishedDependencies.putAll(other.publishedDependencies);
+        this.modules.addAll(other.modules);
+        this.deployedArtifacts.addAll(other.deployedArtifacts);
+        this.publishedDependencies.addAll(other.publishedDependencies);
         this.buildDependencies.addAll(other.buildDependencies);
         this.docker.append(other.docker);
         this.env.append(other.env);
@@ -126,9 +131,7 @@ public class BuildInfo implements Serializable, ProxyBuildInfoCallback {
         if (artifacts == null) {
             return;
         }
-        for (Artifact artifact : artifacts) {
-            deployedArtifacts.put(artifact, artifact);
-        }
+        deployedArtifacts.addAll(artifacts);
     }
 
     protected void appendBuildDependencies(List<BuildDependency> dependencies) {
@@ -142,12 +145,10 @@ public class BuildInfo implements Serializable, ProxyBuildInfoCallback {
         if (dependencies == null) {
             return;
         }
-        for (Dependency dependency : dependencies) {
-            publishedDependencies.put(dependency, dependency);
-        }
+        publishedDependencies.addAll(dependencies);
     }
 
-    protected Map<Artifact, Artifact> getDeployedArtifacts() {
+    protected List<Artifact> getDeployedArtifacts() {
         return deployedArtifacts;
     }
 
@@ -155,7 +156,7 @@ public class BuildInfo implements Serializable, ProxyBuildInfoCallback {
         return buildDependencies;
     }
 
-    protected Map<Dependency, Dependency> getPublishedDependencies() {
+    protected List<Dependency> getPublishedDependencies() {
         return publishedDependencies;
     }
 
@@ -191,6 +192,16 @@ public class BuildInfo implements Serializable, ProxyBuildInfoCallback {
                 publishedDependencies.put(dependency, dependency);
             }
         }
+        addDefaultModuleToModules(ExtractorUtils.sanitizeBuildName(build.getParent().getDisplayName()));
+        return new PipelineBuildInfoDeployer(config, client, build, listener, new BuildInfoAccessor(this));
+    }
+
+    private void addDefaultModuleToModules(String moduleId) {
+        ModuleBuilder moduleBuilder = new ModuleBuilder()
+                .id(moduleId)
+                .artifacts(deployedArtifacts)
+                .dependencies(publishedDependencies);
+        modules.add(moduleBuilder.build());
     }
 
     public void setCpsScript(CpsScript cpsScript) {
@@ -200,5 +211,9 @@ public class BuildInfo implements Serializable, ProxyBuildInfoCallback {
 
     public void collectBuildInfo(String content) {
         docker.addCapturedManifest(content);
+    }
+
+    public List<Module> getModules() {
+        return modules;
     }
 }
