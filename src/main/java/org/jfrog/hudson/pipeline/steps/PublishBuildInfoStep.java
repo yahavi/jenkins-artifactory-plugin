@@ -3,6 +3,7 @@ package org.jfrog.hudson.pipeline.steps;
 import com.google.inject.Inject;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.steps.*;
@@ -46,13 +47,16 @@ public class PublishBuildInfoStep extends AbstractStepImpl {
         @StepContextParameter
         private transient TaskListener listener;
 
+        @StepContextParameter
+        private transient Launcher launcher;
+
         @Inject(optional = true)
         private transient PublishBuildInfoStep step;
 
         @Override
         protected Boolean run() throws Exception {
             BuildInfoAccessor buildInfo = new BuildInfoAccessor(step.getBuildInfo());
-            BuildInfoDeployer deployer = buildInfo.createDeployer(build, listener, Utils.prepareArtifactoryServer(null, step.getServer()));
+            BuildInfoDeployer deployer = buildInfo.createDeployer(build, listener, launcher, Utils.prepareArtifactoryServer(null, step.getServer()));
             deployer.deploy();
             return true;
         }

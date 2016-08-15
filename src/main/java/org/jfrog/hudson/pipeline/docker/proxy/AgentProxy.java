@@ -14,7 +14,7 @@ import java.io.Serializable;
  * Created by romang on 8/14/16.
  */
 @Extension
-public class AgentProxy extends ComputerListener implements Serializable{
+public class AgentProxy extends ComputerListener implements Serializable {
 
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
@@ -27,17 +27,6 @@ public class AgentProxy extends ComputerListener implements Serializable{
                 return true;
             }
         });
-
         super.onOnline(c, listener);
-    }
-
-    @Override
-    public void onConfigurationChange() {
-        final int port = PluginsUtils.getProxyPort();
-        final String publicKey = PluginsUtils.getProxyPublicKey();
-        final String privateKey = PluginsUtils.getProxyPrivateKey();
-        DeProxy.init(port, publicKey, privateKey);
-
-        super.onConfigurationChange();
     }
 }

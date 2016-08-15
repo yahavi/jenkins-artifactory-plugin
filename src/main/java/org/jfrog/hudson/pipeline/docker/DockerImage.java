@@ -23,14 +23,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Created by romang on 8/9/16.
  */
-public class DockerImage implements Serializable{
+public class DockerImage implements Serializable {
     private final String imageId;
     private final String imageTag;
     private final String manifest;
+    private Properties properties = new Properties();
 
     public DockerImage(String imageId, String imageTag, String manifest) {
         this.imageId = imageId;
@@ -38,8 +40,16 @@ public class DockerImage implements Serializable{
         this.manifest = manifest;
     }
 
+    public void addProperties(Properties properties) {
+        this.properties.putAll(properties);
+    }
+
     public Module generateBuildInfoModule(TaskListener listener, ArtifactoryConfigurator config, String buildName, String buildNumber, String timestamp) throws IOException {
         final String buildProperties = String.format("build.name=%s|build.number=%s|build.timestamp=%s", buildName, buildNumber, timestamp);
+        Properties artifactProperties = new Properties();
+        artifactProperties.setProperty("build.name", buildName);
+        artifactProperties.setProperty("build.number", buildNumber);
+        artifactProperties.setProperty("build.timestamp", timestamp);
 
         ArtifactoryServer server = config.getArtifactoryServer();
         CredentialsConfig preferredResolver = server.getDeployerCredentialsConfig();
@@ -53,11 +63,18 @@ public class DockerImage implements Serializable{
                 server.createProxyConfiguration(Jenkins.getInstance().proxy));
 
         Module buildInfoModule = new Module();
-        buildInfoModule.setId(imageId);
+        buildInfoModule.setId(imageTag.substring(imageTag.indexOf("/") + 1));
         DockerLayers layers = createLayers(dependenciesClient);
-        setImageArtifacts(buildInfoModule, layers, buildProperties, propertyChangeClient);
-        setImageDepenencies(buildInfoModule, layers, dependenciesClient, server);
+        setDependenciesAndArtifacts(buildInfoModule, layers, buildProperties, artifactProperties,
+                dependenciesClient, propertyChangeClient, server);
+        setProperties(buildInfoModule);
         return buildInfoModule;
+    }
+
+    private void setProperties(Module buildInfoModule) {
+        properties.setProperty("docker.image.id", DockerUtils.getShaValue(imageId));
+        properties.setProperty("docker.captured.image", imageTag);
+        buildInfoModule.setProperties(properties);
     }
 
     private DockerLayers createLayers(ArtifactoryDependenciesClient dependenciesClient) throws IOException {
@@ -72,35 +89,36 @@ public class DockerImage implements Serializable{
         return layers;
     }
 
-    private void setImageArtifacts(Module buildInfoModule, DockerLayers layers, String buildProperties, ArtifactoryBuildInfoClient propertyChangeClient) throws IOException {
-        List<Artifact> artifacts = new ArrayList<Artifact>();
-        for (DockerLayer layer : layers.getLayers()) {
-            Artifact artifact = new ArtifactBuilder(layer.getFilename()).sha1(layer.getSha1()).build();
-            propertyChangeClient.executeUpdateFileProperty(layer.getFullPath(), buildProperties);
-            artifacts.add(artifact);
-        }
-        buildInfoModule.setArtifacts(artifacts);
-    }
-
-    private void setImageDepenencies(Module buildInfoModule, DockerLayers layers, ArtifactoryDependenciesClient dependenciesClient, ArtifactoryServer server) throws IOException {
+    private void setDependenciesAndArtifacts(Module buildInfoModule, DockerLayers layers, String buildProperties, Properties artifactProperties, ArtifactoryDependenciesClient dependenciesClient, ArtifactoryBuildInfoClient propertyChangeClient, ArtifactoryServer server) throws IOException {
         DockerLayer historyLayer = layers.getByDigest(imageId);
         HttpResponse res = dependenciesClient.downloadArtifact(server.getUrl() + "/" + historyLayer.getFullPath());
         int dependencyLayerNum = DockerUtils.getNumberOfDependentLayers(IOUtils.toString(res.getEntity().getContent()));
 
         List<Dependency> dependencies = new ArrayList<Dependency>();
-        Iterator<String> it = DockerUtils.getDockerManifestLayersDigest(manifest).iterator();
+        Iterator<String> it = DockerUtils.getLayersDigests(manifest).iterator();
         for (int i = 0; i < dependencyLayerNum; i++) {
             String digest = it.next();
             DockerLayer layer = layers.getByDigest(digest);
-            Dependency dependency = new DependencyBuilder().id(layer.getFilename()).sha1(layer.getSha1()).build();
+            propertyChangeClient.executeUpdateFileProperty(layer.getFullPath(), buildProperties);
+            Dependency dependency = new DependencyBuilder().id(layer.getFilename()).sha1(layer.getSha1()).properties(artifactProperties).build();
             dependencies.add(dependency);
         }
         buildInfoModule.setDependencies(dependencies);
+
+        List<Artifact> artifacts = new ArrayList<Artifact>();
+        while (it.hasNext()) {
+            String digest = it.next();
+            DockerLayer layer = layers.getByDigest(digest);
+            propertyChangeClient.executeUpdateFileProperty(layer.getFullPath(), buildProperties);
+            Artifact artifact = new ArtifactBuilder(layer.getFilename()).sha1(layer.getSha1()).properties(artifactProperties).build();
+            artifacts.add(artifact);
+        }
+        buildInfoModule.setArtifacts(artifacts);
     }
 
     private String getAqlSearchQuery() {
-        final String imagePath = DockerUtils.getPathFromImageTag(imageTag);
-        List<String> layersDigest = DockerUtils.getDockerManifestLayersDigest(manifest);
+        final String imagePath = DockerUtils.getImagePath(imageTag);
+        List<String> layersDigest = DockerUtils.getLayersDigests(manifest);
 
         StringBuilder aqlRequestForDockerSha = new StringBuilder("items.find({\"$or\":[ ");
         List<String> layersQuery = new ArrayList<String>();

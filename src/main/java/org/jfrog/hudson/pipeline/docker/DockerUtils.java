@@ -4,33 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.google.common.base.Charsets;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.hash.Hashing;
 import org.apache.commons.lang.StringUtils;
 import org.jfrog.hudson.pipeline.Utils;
-import org.jfrog.hudson.pipeline.docker.proxy.ProxyBuildInfoCallback;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by romang on 7/28/16.
  */
-public class DockerUtils {
-    private static Multimap<String, WeakReference<ProxyBuildInfoCallback>> imageTagsToCapture = ArrayListMultimap.create();
-
-    /**
-     * Register to collect buildInfo for specific docker image.
-     *
-     * @param id
-     * @param buildInfoCallback
-     */
-    public static void registerProxy(String id, ProxyBuildInfoCallback buildInfoCallback) {
-        imageTagsToCapture.put(id, new WeakReference<ProxyBuildInfoCallback>(buildInfoCallback));
-    }
+public class DockerUtils implements Serializable {
 
     /**
      * Get image Id from imageTag using Docker client
@@ -38,31 +24,12 @@ public class DockerUtils {
      * @param imageTag
      * @return
      */
-    public static String getImageTagId(String imageTag) {
+    public static String getImageDigest(String imageTag) {
         DockerClient dockerClient = DockerClientBuilder.getInstance().build();
         return dockerClient.inspectImageCmd(imageTag).exec().getId();
     }
 
-    /**
-     * Pass captured content (manifest.json) from the proxy to buildInfo handler.
-     *
-     * @param content
-     */
-    public static void captureContent(String content) {
-        try {
-            String digest = getImageIdFromManifest(content);
-            for (WeakReference<ProxyBuildInfoCallback> buildInfo : imageTagsToCapture.get(digest)) {
-                if (buildInfo.get() != null) {
-                    buildInfo.get().collectBuildInfo(content);
-                }
-            }
-            imageTagsToCapture.removeAll(digest);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static String getImageIdFromManifest(String manifest) throws IOException {
+    public static String getConfigDigest(String manifest) throws IOException {
         JsonNode manifestTree = Utils.mapper().readTree(manifest);
         return StringUtils.remove(manifestTree.get("config").get("digest").toString(), "\"");
     }
@@ -73,7 +40,7 @@ public class DockerUtils {
      * @param manifestContent
      * @return
      */
-    public static List<String> getDockerManifestLayersDigest(String manifestContent) {
+    public static List<String> getLayersDigests(String manifestContent) {
         List<String> dockerLayersDependencies = new ArrayList<String>();
         try {
             JsonNode manifest = Utils.mapper().readTree(manifestContent);
@@ -137,7 +104,7 @@ public class DockerUtils {
         return StringUtils.substring(digest, 0, StringUtils.indexOf(digest, ":"));
     }
 
-    public static String getPathFromImageTag(String imageTag) {
+    public static String getImagePath(String imageTag) {
         int indexOfFirstSlash = imageTag.indexOf("/");
         int indexOfLastColon = imageTag.lastIndexOf(":");
 
@@ -183,4 +150,10 @@ public class DockerUtils {
         }
         return layersNum;
     }
+
+    public static String getParentDigest(String digest) {
+        DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+        return dockerClient.inspectImageCmd(digest).exec().getParent();
+    }
+
 }

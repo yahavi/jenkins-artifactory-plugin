@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jfrog.build.api.util.NullLog;
 import org.jfrog.build.client.ArtifactoryVersion;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
+import org.jfrog.hudson.pipeline.docker.proxy.DeProxy;
 import org.jfrog.hudson.util.Credentials;
 import org.jfrog.hudson.util.RepositoriesUtils;
 import org.jfrog.hudson.util.plugins.PluginsUtils;
@@ -63,6 +64,10 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
         private boolean useCredentialsPlugin;
         private List<ArtifactoryServer> artifactoryServers;
         private boolean pushToBintrayEnabled = true;
+        private boolean proxyEnabled = false;
+        private int port;
+        private String certPublic = "";
+        private String certPrivate = "";
 
         public DescriptorImpl() {
             super(ArtifactoryBuilder.class);
@@ -127,7 +132,6 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
                 @QueryParameter("password") final String deployerCredentialsPassword
         ) throws ServletException {
 
-
             if (StringUtils.isBlank(url)) {
                 return FormValidation.error("Please set a valid Artifactory URL");
             }
@@ -175,6 +179,14 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
             useCredentialsPlugin = (Boolean) o.get("useCredentialsPlugin");
             pushToBintrayEnabled = (Boolean) o.get("pushToBintrayEnabled");
 
+            try {
+                configureProxy((JSONObject) o.get("proxyEnabled"));
+            } catch (IOException e) {
+                // Do nothing
+            } catch (InterruptedException e) {
+                // Do nothing
+            }
+
             Object servers = o.get("artifactoryServer");    // an array or single object
             if (!JSONNull.getInstance().equals(servers)) {
                 artifactoryServers = req.bindJSONToList(ArtifactoryServer.class, servers);
@@ -183,6 +195,20 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
             }
             save();
             return super.configure(req, o) && !isServerConfigurationError();
+        }
+
+        private void configureProxy(JSONObject proxyConfig) throws IOException, InterruptedException {
+            if (proxyConfig == null) {
+                proxyEnabled = false;
+                DeProxy.stopAll();
+                return;
+            }
+
+            proxyEnabled = true;
+            port = Integer.parseInt(proxyConfig.get("port").toString());
+            certPublic = (String) proxyConfig.get("certPublic");
+            certPrivate = (String) proxyConfig.get("certPrivate");
+            DeProxy.initAll(port, certPublic, certPrivate);
         }
 
         private boolean isServerConfigurationError() {
@@ -222,6 +248,23 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
         // global.jelly uses this method to retrieve the value of pushToBintrayEnabled to determine if the checkbox should be checked.
         public boolean isPushToBintrayEnabled() {
             return pushToBintrayEnabled;
+        }
+
+        @SuppressWarnings({"UnusedDeclaration"})
+        public boolean isProxyEnabled() {
+            return proxyEnabled;
+        }
+
+        public String getCertPublic() {
+            return certPublic;
+        }
+
+        public String getCertPrivate() {
+            return certPrivate;
+        }
+
+        public int getPort() {
+            return port;
         }
     }
 }

@@ -69,13 +69,9 @@ public class PluginsUtils {
     }
 
     public static boolean isUseCredentialsPlugin() {
-        ArtifactoryBuilder.DescriptorImpl descriptor = (ArtifactoryBuilder.DescriptorImpl)
-                Hudson.getInstance().getDescriptor(ArtifactoryBuilder.class);
-        if (descriptor != null) {
-            return descriptor.getUseCredentialsPlugin();
-        }
-        throw new IllegalStateException("ArtifactoryBuilder descriptor is null");
+        return getDescriptor().getUseCredentialsPlugin();
     }
+
 
     /**
      * If push to Bintray is enabled. Retrieves this value from the ArtifactoryBuilder class.
@@ -84,10 +80,14 @@ public class PluginsUtils {
      * @throws IllegalStateException
      */
     public static boolean isPushToBintrayEnabled() {
+        return getDescriptor().isPushToBintrayEnabled();
+    }
+
+    private static ArtifactoryBuilder.DescriptorImpl getDescriptor() {
         ArtifactoryBuilder.DescriptorImpl descriptor = (ArtifactoryBuilder.DescriptorImpl)
                 Hudson.getInstance().getDescriptor(ArtifactoryBuilder.class);
         if (descriptor != null) {
-            return descriptor.isPushToBintrayEnabled();
+            return descriptor;
         }
         throw new IllegalStateException("ArtifactoryBuilder descriptor is null");
     }
@@ -100,12 +100,7 @@ public class PluginsUtils {
      */
 
     public static boolean isCredentialsPluginEnabled() {
-        ArtifactoryBuilder.DescriptorImpl descriptor = (ArtifactoryBuilder.DescriptorImpl)
-                Hudson.getInstance().getDescriptor(ArtifactoryBuilder.class);
-        if (descriptor != null) {
-            return descriptor.getUseCredentialsPlugin();
-        }
-        throw new IllegalStateException("ArtifactoryBuilder descriptor is null");
+        return getDescriptor().getUseCredentialsPlugin();
     }
 
     /**
@@ -134,5 +129,17 @@ public class PluginsUtils {
             mapper = new ObjectMapper();
         }
         return mapper;
+    }
+
+    public static int getProxyPort() {
+        return getDescriptor().getPort();
+    }
+
+    public static String getProxyPublicKey() {
+        return getDescriptor().getCertPublic();
+    }
+
+    public static String getProxyPrivateKey() {
+        return getDescriptor().getCertPrivate();
     }
 }

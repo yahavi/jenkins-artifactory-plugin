@@ -116,5 +116,22 @@
                 </table>
             </f:repeatable>
         </f:entry>
+
+        <f:optionalBlock title="Enable Artifactory proxy"
+            name="proxyEnabled"
+            field="proxyEnabled"
+            checked="${descriptor.proxyEnabled}">
+
+            <f:entry title="Port" help="/plugin/artifactory/help/ArtifactoryBuilder/help-resolverUserName.html">
+                <f:textbox field="port" value="${descriptor.port}"/>
+            </f:entry>
+            <f:entry title="PEM-encoded certificate file" help="/plugin/artifactory/help/ArtifactoryBuilder/help-resolverPassword.html">
+                <f:textbox field="certPublic" value="${descriptor.certPublic}"/>
+            </f:entry>
+            <f:entry title="PEM-encoded private key file" help="/plugin/artifactory/help/ArtifactoryBuilder/help-resolverPassword.html">
+                <f:textbox field="certPrivate" value="${descriptor.certPrivate}"/>
+            </f:entry>
+        </f:optionalBlock>
+
     </f:section>
 </j:jelly>

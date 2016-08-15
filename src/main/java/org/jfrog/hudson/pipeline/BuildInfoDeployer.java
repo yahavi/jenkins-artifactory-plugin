@@ -27,8 +27,6 @@ public class BuildInfoDeployer extends AbstractBuildInfoDeployer {
     private ArtifactoryConfigurator configurator;
     private Build buildInfo;
 
-    public PipelineBuildInfoDeployer(ArtifactoryPipelineConfigurator configurator, ArtifactoryBuildInfoClient client,
-                                     Run build, TaskListener listener, BuildInfoAccessor buildinfoAccessor) throws IOException, InterruptedException, NoSuchAlgorithmException {
     public BuildInfoDeployer(ArtifactoryConfigurator configurator, ArtifactoryBuildInfoClient client,
                              Run build, TaskListener listener, BuildInfoAccessor buildinfoAccessor) throws IOException, InterruptedException, NoSuchAlgorithmException {
         super(configurator, build, listener, client);
@@ -60,15 +58,6 @@ public class BuildInfoDeployer extends AbstractBuildInfoDeployer {
         listener.getLogger().println("Deploying build info to: " + artifactoryUrl + "/api/build");
         client.sendBuildInfo(this.buildInfo);
         build.getActions().add(0, new BuildInfoResultAction(artifactoryUrl, build, this.buildInfo));
-    }
-
-    private void createDeployDetailsAndAddToBuildInfo(List<Artifact> deployedArtifacts,
-                                                      List<Dependency> publishedDependencies) throws IOException, NoSuchAlgorithmException {
-        ModuleBuilder moduleBuilder = new ModuleBuilder()
-                .id(ExtractorUtils.sanitizeBuildName(build.getParent().getDisplayName()))
-                .artifacts(deployedArtifacts)
-                .dependencies(publishedDependencies);
-        buildInfo.setModules(Lists.newArrayList(moduleBuilder.build()));
     }
 
     /**
