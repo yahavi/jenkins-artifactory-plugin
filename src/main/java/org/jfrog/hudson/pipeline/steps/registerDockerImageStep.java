@@ -59,9 +59,7 @@ public class registerDockerImageStep extends AbstractStepImpl {
         protected Boolean run() throws Exception {
             JenkinsBuildInfoLog log = new JenkinsBuildInfoLog(listener);
             if (!DockerAgentUtils.isProxyUp(launcher)) {
-                log.error("Artifactory proxy is not running, build info will not be collected for image:");
-                log.error(step.getImageTag());
-                throw new RuntimeException("Docker proxy is not running, enable the proxy in Jenkins configuration");
+                throw new RuntimeException("Build info capturing for Docker images is not available while Artifactory proxy is not running, enable the proxy in Jenkins configuration.");
             }
 
             log.info("Build info will be captured for docker image: " + step.getImageTag());

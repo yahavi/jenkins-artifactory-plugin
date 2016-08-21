@@ -142,4 +142,8 @@ public class PluginsUtils {
     public static String getProxyPrivateKey() {
         return getDescriptor().getCertPrivate();
     }
+
+    public static boolean isProxyEnabled() {
+        return getDescriptor().isProxyEnabled();
+    }
 }

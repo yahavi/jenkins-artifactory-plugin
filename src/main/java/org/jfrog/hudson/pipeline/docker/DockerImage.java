@@ -100,7 +100,7 @@ public class DockerImage implements Serializable {
             String digest = it.next();
             DockerLayer layer = layers.getByDigest(digest);
             propertyChangeClient.executeUpdateFileProperty(layer.getFullPath(), buildProperties);
-            Dependency dependency = new DependencyBuilder().id(layer.getFilename()).sha1(layer.getSha1()).properties(artifactProperties).build();
+            Dependency dependency = new DependencyBuilder().id(layer.getFileName()).sha1(layer.getSha1()).properties(artifactProperties).build();
             dependencies.add(dependency);
         }
         buildInfoModule.setDependencies(dependencies);
@@ -110,7 +110,7 @@ public class DockerImage implements Serializable {
             String digest = it.next();
             DockerLayer layer = layers.getByDigest(digest);
             propertyChangeClient.executeUpdateFileProperty(layer.getFullPath(), buildProperties);
-            Artifact artifact = new ArtifactBuilder(layer.getFilename()).sha1(layer.getSha1()).properties(artifactProperties).build();
+            Artifact artifact = new ArtifactBuilder(layer.getFileName()).sha1(layer.getSha1()).properties(artifactProperties).build();
             artifacts.add(artifact);
         }
         buildInfoModule.setArtifacts(artifacts);
@@ -127,7 +127,7 @@ public class DockerImage implements Serializable {
             String shaValue = DockerUtils.getShaValue(digest);
 
             String singleFileQuery = String.format("{\"$and\": [{\"name\": {\"$eq\" : \"%s\"}}, {\"path\": {\"$eq\": \"%s\"}}]}",
-                    DockerUtils.digestToFilename(digest), imagePath);
+                    DockerUtils.digestToFileName(digest), imagePath);
 
             //String singleFileQuery = "{\"$and\": [{\"name\": {\"$eq\" : \"" + shaVersion + "__" + shaValue + "\"}}, {\"path\": {\"$eq\": \"" + imagePath + "\"}}]}";
             if (StringUtils.equalsIgnoreCase(shaVersion, "sha1")) {

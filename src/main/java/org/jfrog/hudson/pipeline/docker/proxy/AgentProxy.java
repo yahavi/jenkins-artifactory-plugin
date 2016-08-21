@@ -18,15 +18,18 @@ public class AgentProxy extends ComputerListener implements Serializable {
 
     @Override
     public void onOnline(Computer c, TaskListener listener) throws IOException, InterruptedException {
+        final boolean proxyEnabled = PluginsUtils.isProxyEnabled();
         final int port = PluginsUtils.getProxyPort();
         final String publicKey = PluginsUtils.getProxyPublicKey();
         final String privateKey = PluginsUtils.getProxyPrivateKey();
-        c.getChannel().call(new Callable<Boolean, IOException>() {
-            public Boolean call() throws IOException {
-                DeProxy.init(port, publicKey, privateKey);
-                return true;
-            }
-        });
+        if (proxyEnabled) {
+            c.getChannel().call(new Callable<Boolean, IOException>() {
+                public Boolean call() throws IOException {
+                    DeProxy.init(port, publicKey, privateKey);
+                    return true;
+                }
+            });
+        }
         super.onOnline(c, listener);
     }
 }

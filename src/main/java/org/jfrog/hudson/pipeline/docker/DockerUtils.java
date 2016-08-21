@@ -29,6 +29,24 @@ public class DockerUtils implements Serializable {
         return dockerClient.inspectImageCmd(imageTag).exec().getId();
     }
 
+    /**
+     * Get parent digest of an image
+     *
+     * @param digest
+     * @return
+     */
+    public static String getParentDigest(String digest) {
+        DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+        return dockerClient.inspectImageCmd(digest).exec().getParent();
+    }
+
+    /**
+     * Get config digest from manifest (image id)
+     *
+     * @param manifest
+     * @return
+     * @throws IOException
+     */
     public static String getConfigDigest(String manifest) throws IOException {
         JsonNode manifestTree = Utils.mapper().readTree(manifest);
         return StringUtils.remove(manifestTree.get("config").get("digest").toString(), "\"");
@@ -96,14 +114,35 @@ public class DockerUtils implements Serializable {
         return blobSum;
     }
 
+    /**
+     * Get sha value from digest
+     * example: sha256:abcabcabc12334 the value is abcabcabc12334
+     *
+     * @param digest
+     * @return
+     */
     public static String getShaValue(String digest) {
         return StringUtils.substring(digest, StringUtils.indexOf(digest, ":") + 1);
     }
 
+    /**
+     * Get sha value from digest
+     * example: sha256:abcabcabc12334 the value is sha256
+     *
+     * @param digest
+     * @return
+     */
     public static String getShaVersion(String digest) {
         return StringUtils.substring(digest, 0, StringUtils.indexOf(digest, ":"));
     }
 
+    /**
+     * Parse imageTag and get the relative path of the pushed image.
+     * example: url:8081/image:version to image/version
+     *
+     * @param imageTag
+     * @return
+     */
     public static String getImagePath(String imageTag) {
         int indexOfFirstSlash = imageTag.indexOf("/");
         int indexOfLastColon = imageTag.lastIndexOf(":");
@@ -116,17 +155,36 @@ public class DockerUtils implements Serializable {
         return stringBuilder.toString();
     }
 
-    public static String filenameToDigest(String filename) {
-        return StringUtils.replace(filename, "__", ":");
+    /**
+     * layer file name to digest format
+     *
+     * @param fileName
+     * @return
+     */
+    public static String fileNameToDigest(String fileName) {
+        return StringUtils.replace(fileName, "__", ":");
     }
 
-    public static String digestToFilename(String digest) {
+    /**
+     * digest format to layer file name
+     *
+     * @param digest
+     * @return
+     */
+    public static String digestToFileName(String digest) {
         if (StringUtils.startsWith(digest, "sha1")) {
             return "manifest.json";
         }
         return getShaVersion(digest) + "__" + getShaValue(digest);
     }
 
+    /**
+     * Returns number of dependencies layers in the image.
+     *
+     * @param imageContent
+     * @return
+     * @throws IOException
+     */
     public static int getNumberOfDependentLayers(String imageContent) throws IOException {
         JsonNode history = Utils.mapper().readTree(imageContent).get("history");
         int layersNum = history.size();
@@ -149,11 +207,6 @@ public class DockerUtils implements Serializable {
             }
         }
         return layersNum;
-    }
-
-    public static String getParentDigest(String digest) {
-        DockerClient dockerClient = DockerClientBuilder.getInstance().build();
-        return dockerClient.inspectImageCmd(digest).exec().getParent();
     }
 
 }

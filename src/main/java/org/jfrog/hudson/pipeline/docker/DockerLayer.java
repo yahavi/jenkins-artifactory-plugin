@@ -10,28 +10,28 @@ import java.io.Serializable;
 public class DockerLayer implements Serializable {
     private String repo;
     private String path;
-    private String filename;
+    private String fileName;
     private String sha1;
     private String digest;
 
     public DockerLayer(AqlSearchResult.SearchEntry entry) {
         this.repo = entry.getRepo();
         this.path = entry.getPath();
-        this.filename = entry.getName();
+        this.fileName = entry.getName();
         this.sha1 = entry.getActual_sha1();
-        if (!filename.equals("manifest.json")) {
-            this.digest = DockerUtils.filenameToDigest(filename);
+        if (!fileName.equals("manifest.json")) {
+            this.digest = DockerUtils.fileNameToDigest(fileName);
         } else {
             this.digest = "sha1:" + sha1;
         }
     }
 
     public String getFullPath() {
-        return repo + "/" + path + "/" + filename;
+        return repo + "/" + path + "/" + fileName;
     }
 
-    public String getFilename() {
-        return filename;
+    public String getFileName() {
+        return fileName;
     }
 
     public String getSha1() {

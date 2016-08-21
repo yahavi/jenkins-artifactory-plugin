@@ -29,6 +29,7 @@ public class BuildInfoFilterAdapter extends HttpFiltersAdapter {
     public HttpResponse proxyToServerRequest(HttpObject httpObject) {
         if (httpObject instanceof ByteBufHolder && originalRequest.getMethod() == HttpMethod.PUT
                 && originalRequest.getUri().contains("manifest")) {
+
             String contentStr = ((ByteBufHolder) httpObject).content().toString(CharsetUtil.UTF_8);
             Properties properties = new Properties();
             properties.put("User-Agent", originalRequest.headers().get("User-Agent"));
