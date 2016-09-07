@@ -42,7 +42,7 @@ public class BuildInfo implements Serializable {
     private List<Module> modules = new ArrayList<Module>();
     private Env env = new Env();
 
-    private Docker docker = new Docker(this);
+    private DockerBuildInfo dockerBuildInfo = new DockerBuildInfo(this);
 
     public BuildInfo(Run build) {
         this.buildName = BuildUniqueIdentifierHelper.getBuildName(build);
@@ -87,7 +87,7 @@ public class BuildInfo implements Serializable {
         this.deployedArtifacts.addAll(other.deployedArtifacts);
         this.publishedDependencies.addAll(other.publishedDependencies);
         this.buildDependencies.addAll(other.buildDependencies);
-        this.docker.append(other.docker);
+        this.dockerBuildInfo.append(other.dockerBuildInfo);
         this.env.append(other.env);
     }
 
@@ -96,9 +96,8 @@ public class BuildInfo implements Serializable {
         return env;
     }
 
-    @Whitelisted
-    public Docker getDocker() {
-        return docker;
+    public DockerBuildInfo getDocker() {
+        return dockerBuildInfo;
     }
 
     @Whitelisted
@@ -159,7 +158,7 @@ public class BuildInfo implements Serializable {
         ArtifactoryBuildInfoClient client = server.createArtifactoryClient(preferredDeployer.getUsername(),
                 preferredDeployer.getPassword(), server.createProxyConfiguration(Jenkins.getInstance().proxy));
 
-        List<Module> dockerModules = docker.generateBuildInfoModules(listener, config, launcher);
+        List<Module> dockerModules = dockerBuildInfo.generateBuildInfoModules(listener, config, launcher);
         addDockerBuildInfoModules(dockerModules);
         addDefaultModuleToModules(ExtractorUtils.sanitizeBuildName(build.getParent().getDisplayName()));
         return new BuildInfoDeployer(config, client, build, listener, new BuildInfoAccessor(this));
@@ -183,7 +182,7 @@ public class BuildInfo implements Serializable {
 
     public void setCpsScript(CpsScript cpsScript) {
         this.env.setCpsScript(cpsScript);
-        this.docker.setCpsScript(cpsScript);
+        this.dockerBuildInfo.setCpsScript(cpsScript);
     }
 
     public List<Module> getModules() {

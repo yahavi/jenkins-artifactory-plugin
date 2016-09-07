@@ -27,9 +27,11 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jfrog.build.api.util.NullLog;
 import org.jfrog.build.client.ArtifactoryVersion;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
+import org.jfrog.hudson.pipeline.docker.proxy.CertManager;
 import org.jfrog.hudson.pipeline.docker.proxy.DeProxy;
 import org.jfrog.hudson.util.Credentials;
 import org.jfrog.hudson.util.RepositoriesUtils;
@@ -37,8 +39,10 @@ import org.jfrog.hudson.util.plugins.PluginsUtils;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 import javax.servlet.ServletException;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -66,12 +70,27 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
         private boolean pushToBintrayEnabled = true;
         private boolean proxyEnabled = false;
         private int port;
-        private String certPublic = "";
-        private String certPrivate = "";
+        private String certPublic;
+        private String certPrivate;
+
+        private static String DEFAULT_CERT_PATH = "secrets/jfrog/certs/jfrog.proxy.crt";
+        private static String DEFAULT_KEY_PATH = "secrets/jfrog/certs/jfrog.proxy.key";
 
         public DescriptorImpl() {
             super(ArtifactoryBuilder.class);
+            initDefaultCertPaths();
             load();
+        }
+
+        private void initDefaultCertPaths() {
+            if (StringUtils.isNotEmpty(certPublic) || StringUtils.isNotEmpty(certPrivate)) {
+                return;
+            }
+            File jenkinsHome = new File(Jenkins.getInstance().getRootDir().getPath());
+            File publicCert = new File(jenkinsHome, DEFAULT_CERT_PATH);
+            File privateCert = new File(jenkinsHome, DEFAULT_KEY_PATH);
+            certPublic = publicCert.getPath();
+            certPrivate = privateCert.getPath();
         }
 
         @SuppressWarnings("unused")
@@ -204,11 +223,11 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
                 return;
             }
 
-            proxyEnabled = true;
             port = Integer.parseInt(proxyConfig.get("port").toString());
-            certPublic = (String) proxyConfig.get("certPublic");
-            certPrivate = (String) proxyConfig.get("certPrivate");
-            DeProxy.initAll(port, certPublic, certPrivate);
+            if (!proxyEnabled) {
+                proxyEnabled = true;
+                DeProxy.initAll(port, certPublic, certPrivate);
+            }
         }
 
         private boolean isServerConfigurationError() {
@@ -256,11 +275,43 @@ public class ArtifactoryBuilder extends GlobalConfiguration {
         }
 
         public String getCertPublic() {
-            return certPublic;
+            if (new File(certPublic).exists()) {
+                return certPublic;
+            }
+            return "";
         }
 
         public String getCertPrivate() {
-            return certPrivate;
+            if (new File(certPrivate).exists()) {
+                return certPrivate;
+            }
+            return "";
+        }
+
+        @JavaScriptMethod
+        public Pair<String, String> generateCerts() {
+            if (isProxyCertExist()) {
+                return null;
+            }
+
+            CertManager.createCertificateSource(certPublic, certPrivate);
+            try {
+                DeProxy.initAll(port, certPublic, certPrivate);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return Pair.of(certPublic, certPrivate);
+        }
+
+        private Boolean isProxyCertExist() {
+            File certPublicFile = new File(certPublic);
+            File certPrivateFile = new File(certPrivate);
+            if (certPublicFile.exists() || certPrivateFile.exists()) {
+                return true;
+            }
+            return false;
         }
 
         public int getPort() {

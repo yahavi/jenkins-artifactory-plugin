@@ -117,7 +117,8 @@ public class PluginsUtils {
             URL requestUrl = new URL(jiraBaseUrl + JIRA_REST_SERVERINFO_ENDPOINT);
             HttpResponse response = client.execute(new HttpGet(requestUrl.toURI()));
             lazyInitMapper();
-            Map<String, Object> responseMap = mapper.readValue(response.getEntity().getContent(), new TypeReference<Map<String, Object>>() {});
+            Map<String, Object> responseMap = mapper.readValue(response.getEntity().getContent(), new TypeReference<Map<String, Object>>() {
+            });
             return ((String) responseMap.get("version"));
         } catch (Exception e) {
             throw new RuntimeException("Error while trying to get Jira Issue Tracker version: " + e.getMessage());
@@ -132,18 +133,34 @@ public class PluginsUtils {
     }
 
     public static int getProxyPort() {
-        return getDescriptor().getPort();
+        try {
+            return getDescriptor().getPort();
+        } catch (IllegalStateException e) {
+            return 0;
+        }
     }
 
     public static String getProxyPublicKey() {
-        return getDescriptor().getCertPublic();
+        try {
+            return getDescriptor().getCertPublic();
+        } catch (IllegalStateException e) {
+            return "";
+        }
     }
 
     public static String getProxyPrivateKey() {
-        return getDescriptor().getCertPrivate();
+        try {
+            return getDescriptor().getCertPrivate();
+        } catch (IllegalStateException e) {
+            return "";
+        }
     }
 
     public static boolean isProxyEnabled() {
-        return getDescriptor().isProxyEnabled();
+        try {
+            return getDescriptor().isProxyEnabled();
+        } catch (IllegalStateException e) {
+            return false;
+        }
     }
 }

@@ -1,6 +1,7 @@
 <j:jelly xmlns:j="jelly:core"
          xmlns:f="/lib/form"
          xmlns:st="jelly:stapler"
+         xmlns:r="/lib/jfrog"
          xmlns:c="/lib/credentials">
     <st:adjunct includes="lib.jfrog.repos.credentials"/>
     <f:section title="Artifactory">
@@ -122,15 +123,24 @@
             field="proxyEnabled"
             checked="${descriptor.proxyEnabled}">
 
-            <f:entry title="Port" help="/plugin/artifactory/help/ArtifactoryBuilder/help-resolverUserName.html">
+            <f:entry title="Port" help="/plugin/artifactory/help/ArtifactoryBuilder/help-proxyPort.html">
                 <f:textbox field="port" value="${descriptor.port}"/>
             </f:entry>
-            <f:entry title="PEM-encoded certificate file" help="/plugin/artifactory/help/ArtifactoryBuilder/help-resolverPassword.html">
-                <f:textbox field="certPublic" value="${descriptor.certPublic}"/>
+            <f:entry title="PEM-encoded certificate file path" help="/plugin/artifactory/help/ArtifactoryBuilder/help-publicCert.html">
+                <pre id="publicCert">${descriptor.certPublic}</pre>
             </f:entry>
-            <f:entry title="PEM-encoded private key file" help="/plugin/artifactory/help/ArtifactoryBuilder/help-resolverPassword.html">
-                <f:textbox field="certPrivate" value="${descriptor.certPrivate}"/>
+            <f:entry title="PEM-encoded private key file path" help="/plugin/artifactory/help/ArtifactoryBuilder/help-privateCert.html">
+                <pre id="privateCert">${descriptor.certPrivate}</pre>
             </f:entry>
+
+            <script>
+                var bindToDescriptor = <st:bind value="${descriptor}"/>
+            </script>
+
+            <r:certs title="${%Generate certs and restart}"
+                     progress="${%Generating...}"
+                     bind="bindToDescriptor"/>
+
         </f:optionalBlock>
 
     </f:section>

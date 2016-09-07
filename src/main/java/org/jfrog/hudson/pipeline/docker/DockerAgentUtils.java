@@ -18,6 +18,7 @@ public class DockerAgentUtils implements Serializable {
     private static Multimap<String, Integer> imageIdToBuildInfoId = ArrayListMultimap.create();
     private static Multimap<Integer, DockerImage> buildInfoIdToDockerImage = ArrayListMultimap.create();
     private static Map<String, String> imageIdToImageTag = new HashMap<String, String>();
+    private static Map<String, String> imageTagToTargetRepo = new HashMap<String, String>();
 
     public static boolean isProxyUp(Launcher launcher) throws IOException, InterruptedException {
         return launcher.getChannel().call(new Callable<Boolean, IOException>() {
@@ -27,12 +28,13 @@ public class DockerAgentUtils implements Serializable {
         });
     }
 
-    public static String registerProxy(Launcher launcher, final String imageTag, final int buildInfoId) throws IOException, InterruptedException {
+    public static String registerProxy(Launcher launcher, final String imageTag, final String targetRepo, final int buildInfoId) throws IOException, InterruptedException {
         return launcher.getChannel().call(new Callable<String, IOException>() {
             public String call() throws IOException {
                 String imageId = DockerUtils.getImageDigest(imageTag);
                 imageIdToBuildInfoId.put(imageId, buildInfoId);
                 imageIdToImageTag.put(imageId, imageTag);
+                imageTagToTargetRepo.put(imageTag, targetRepo);
                 return imageId;
             }
         });
@@ -42,7 +44,8 @@ public class DockerAgentUtils implements Serializable {
         try {
             String digest = DockerUtils.getConfigDigest(content);
             for (Integer buildInfoId : imageIdToBuildInfoId.get(digest)) {
-                DockerImage dockerImage = new DockerImage(digest, imageIdToImageTag.get(digest), content);
+                String imageTag = imageIdToImageTag.get(digest);
+                DockerImage dockerImage = new DockerImage(digest, imageTag, imageTagToTargetRepo.get(imageTag), content);
                 String parentId = DockerUtils.getParentDigest(digest);
                 if (StringUtils.isNotEmpty(parentId)) {
                     properties.setProperty("docker.image.parent", DockerUtils.getShaValue(parentId));
@@ -63,6 +66,26 @@ public class DockerAgentUtils implements Serializable {
                 dockerImages.addAll(buildInfoIdToDockerImage.get(buildInfoId));
                 buildInfoIdToDockerImage.removeAll(buildInfoId);
                 return dockerImages;
+            }
+        });
+    }
+
+    public static boolean pushImage(Launcher launcher, final String imageTag, final String username, final String password)
+            throws IOException, InterruptedException {
+        return launcher.getChannel().call(new Callable<Boolean, IOException>() {
+            public Boolean call() throws IOException {
+                DockerUtils.pushImage(imageTag, username, password);
+                return true;
+            }
+        });
+    }
+
+    public static boolean pullImage(Launcher launcher, final String imageTag, final String username, final String password)
+            throws IOException, InterruptedException {
+        return launcher.getChannel().call(new Callable<Boolean, IOException>() {
+            public Boolean call() throws IOException {
+                DockerUtils.pullImage(imageTag, username, password);
+                return true;
             }
         });
     }

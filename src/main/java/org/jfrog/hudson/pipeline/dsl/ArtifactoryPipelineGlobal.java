@@ -1,9 +1,11 @@
 package org.jfrog.hudson.pipeline.dsl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jfrog.hudson.pipeline.types.ArtifactoryServer;
 import org.jfrog.hudson.pipeline.types.BuildInfo;
+import org.jfrog.hudson.pipeline.types.Docker;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -31,6 +33,25 @@ public class ArtifactoryPipelineGlobal implements Serializable {
     }
 
     @Whitelisted
+    public Docker docker(String username, String password) {
+        return new Docker(script, username, password);
+    }
+
+    @Whitelisted
+    public Docker docker(Map<String, Object> dockerArguments) {
+        List<String> keysAsList = Arrays.asList(new String[]{"username", "password"});
+        if (!keysAsList.containsAll(dockerArguments.keySet())) {
+            throw new IllegalArgumentException("create new server allows only the following arguments, " + keysAsList);
+        }
+
+        final ObjectMapper mapper = new ObjectMapper();
+        Docker docker = mapper.convertValue(dockerArguments, Docker.class);
+        docker.setCpsScript(script);
+        return docker;
+    }
+
+
+    @Whitelisted
     public ArtifactoryServer newServer(String url, String username, String password) {
         Map<String, Object> stepVariables = new LinkedHashMap<String, Object>();
         stepVariables.put("url", url);
@@ -43,7 +64,7 @@ public class ArtifactoryPipelineGlobal implements Serializable {
 
     @Whitelisted
     public ArtifactoryServer newServer(Map<String, Object> serverArguments) {
-        List<String> keysAsList = Arrays.asList(new String[] {"url", "username", "password"});
+        List<String> keysAsList = Arrays.asList(new String[]{"url", "username", "password"});
         if (!keysAsList.containsAll(serverArguments.keySet())) {
             throw new IllegalArgumentException("create new server allows only the following arguments, " + keysAsList);
         }

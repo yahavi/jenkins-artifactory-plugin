@@ -2,7 +2,10 @@ package org.jfrog.hudson.pipeline.docker;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.AuthConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.command.PullImageResultCallback;
+import com.github.dockerjava.core.command.PushImageResultCallback;
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import org.apache.commons.lang.StringUtils;
@@ -19,7 +22,7 @@ import java.util.List;
 public class DockerUtils implements Serializable {
 
     /**
-     * Get image Id from imageTag using Docker client
+     * Get image Id from imageTag using DockerBuildInfo client
      *
      * @param imageTag
      * @return
@@ -27,6 +30,34 @@ public class DockerUtils implements Serializable {
     public static String getImageDigest(String imageTag) {
         DockerClient dockerClient = DockerClientBuilder.getInstance().build();
         return dockerClient.inspectImageCmd(imageTag).exec().getId();
+    }
+
+    /**
+     * Get image Id from imageTag using DockerBuildInfo client
+     *
+     * @param imageTag
+     * @return
+     */
+    public static void pushImage(String imageTag, String username, String password) {
+        AuthConfig config = new AuthConfig();
+        config.withUsername(username);
+        config.withPassword(password);
+        DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+        dockerClient.pushImageCmd(imageTag).withAuthConfig(config).exec(new PushImageResultCallback()).awaitSuccess();
+    }
+
+    /**
+     * Get image Id from imageTag using DockerBuildInfo client
+     *
+     * @param imageTag
+     * @return
+     */
+    public static void pullImage(String imageTag, String username, String password) {
+        AuthConfig config = new AuthConfig();
+        config.withUsername(username);
+        config.withPassword(password);
+        DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+        dockerClient.pullImageCmd(imageTag).withAuthConfig(config).exec(new PullImageResultCallback()).awaitSuccess();
     }
 
     /**

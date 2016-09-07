@@ -52,7 +52,7 @@ public class GetArtifactoryServerStep extends AbstractStepImpl {
             List<ArtifactoryServer> artifactoryServers = new ArrayList<ArtifactoryServer>();
             List<ArtifactoryServer> artifactoryConfiguredServers = RepositoriesUtils.getArtifactoryServers();
             if (artifactoryConfiguredServers == null) {
-                getContext().onFailure(new NotFoundException("None Artifactory servers were configured"));
+                getContext().onFailure(new NotFoundException("No Artifactory servers were configured"));
             }
             for (ArtifactoryServer server : artifactoryConfiguredServers) {
                 if (server.getName().equals(artifactoryServerID)) {

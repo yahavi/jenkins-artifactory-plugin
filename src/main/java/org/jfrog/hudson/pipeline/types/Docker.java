@@ -1,64 +1,97 @@
 package org.jfrog.hudson.pipeline.types;
 
-import hudson.Launcher;
-import hudson.model.TaskListener;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
-import org.jfrog.build.api.Module;
-import org.jfrog.hudson.pipeline.ArtifactoryConfigurator;
-import org.jfrog.hudson.pipeline.docker.DockerAgentUtils;
-import org.jfrog.hudson.pipeline.docker.DockerImage;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Created by romang on 7/28/16.
  */
 public class Docker implements Serializable {
+    private CpsScript script;
+    private String username;
+    private String password;
 
-    private BuildInfo buildInfo;
-    private CpsScript cpsScript;
-    private List<Integer> buildInfoIds = new ArrayList<Integer>();
+    public Docker() {
+    }
 
-    public Docker(BuildInfo buildInfo) {
-        this.buildInfo = buildInfo;
+    public Docker(CpsScript script, String username, String password) {
+        this.script = script;
+        this.username = username;
+        this.password = password;
+    }
+
+    public void setCpsScript(CpsScript script) {
+        this.script = script;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Whitelisted
-    public void capture(String imageTag) {
-        Map<String, Object> stepVariables = new LinkedHashMap<String, Object>();
-        stepVariables.put("imageTag", imageTag);
-        stepVariables.put("buildInfo", buildInfo);
-
-        cpsScript.invokeMethod("registerDockerImageStep", stepVariables);
+    public BuildInfo push(String imageTag, String targetRepository) throws Exception {
+        return push(imageTag, targetRepository, null);
     }
 
-    public List<Module> generateBuildInfoModules(TaskListener listener, ArtifactoryConfigurator config,
-                                                 Launcher launcher) throws IOException, InterruptedException {
-        buildInfoIds.add(buildInfo.hashCode());
-        List<DockerImage> dockerImages = new ArrayList<DockerImage>();
-        for (Integer buildInfoId : buildInfoIds) {
-            dockerImages.addAll(DockerAgentUtils.getDockerImagesFromAgent(launcher, buildInfoId));
-        }
+    @Whitelisted
+    public BuildInfo push(String imageTag, String targetRepository, BuildInfo providedBuildInfo) throws Exception {
+        Map<String, Object> registerVariables = new LinkedHashMap<String, Object>();
+        registerVariables.put("imageTag", imageTag);
+        registerVariables.put("targetRepo", targetRepository);
+        registerVariables.put("buildInfo", providedBuildInfo);
 
-        String timestamp = Long.toString(buildInfo.getStartDate().getTime());
-        ArrayList<Module> modules = new ArrayList<Module>();
-        for (DockerImage dockerImage : dockerImages) {
-            modules.add(dockerImage.generateBuildInfoModule(listener, config, buildInfo.getName(), buildInfo.getNumber(), timestamp));
-        }
-        return modules;
+        BuildInfo buildInfo = (BuildInfo) script.invokeMethod("registerDockerImageStep", registerVariables);
+        buildInfo.setCpsScript(script);
+
+        Map<String, Object> pushVariables = new LinkedHashMap<String, Object>();
+        pushVariables.put("imageTag", imageTag);
+        pushVariables.put("username", username);
+        pushVariables.put("password", password);
+        script.invokeMethod("dockerPush", pushVariables);
+
+        return buildInfo;
     }
 
-    public void setCpsScript(CpsScript cpsScript) {
-        this.cpsScript = cpsScript;
+    @Whitelisted
+    public BuildInfo push(Map<String, Object> dockerArguments) throws Exception {
+        Map<String, Object> registerVariables = new LinkedHashMap<String, Object>();
+        registerVariables.put("imageTag", dockerArguments.get("image"));
+        registerVariables.put("targetRepo", dockerArguments.get("targetRepo"));
+        registerVariables.put("buildInfo", dockerArguments.get("buildInfo"));
+
+        BuildInfo buildInfo = (BuildInfo) script.invokeMethod("registerDockerImageStep", registerVariables);
+        buildInfo.setCpsScript(script);
+
+        Map<String, Object> pushVariables = new LinkedHashMap<String, Object>();
+        pushVariables.put("imageTag", dockerArguments.get("image"));
+        pushVariables.put("username", username);
+        pushVariables.put("password", password);
+        script.invokeMethod("dockerPush", pushVariables);
+
+        return buildInfo;
     }
 
-    public void append(Docker other) {
-        buildInfoIds.add(other.buildInfo.hashCode());
+    @Whitelisted
+    public BuildInfo pull(String imageTag) throws Exception {
+        return pull(imageTag, null);
+    }
+
+    @Whitelisted
+    public BuildInfo pull(String imageTag, BuildInfo providedBuildInfo) throws Exception {
+        Map<String, Object> pullVariables = new LinkedHashMap<String, Object>();
+        pullVariables.put("imageTag", imageTag);
+        pullVariables.put("username", username);
+        pullVariables.put("password", password);
+        script.invokeMethod("dockerPull", pullVariables);
+
+        return providedBuildInfo;
     }
 }
