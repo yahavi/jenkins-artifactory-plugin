@@ -72,6 +72,17 @@ public class DockerUtils implements Serializable {
     }
 
     /**
+     * Get image created time string
+     *
+     * @param digest
+     * @return
+     */
+    public static String getCreated(String digest) {
+        DockerClient dockerClient = DockerClientBuilder.getInstance().build();
+        return dockerClient.inspectImageCmd(digest).exec().getCreated();
+    }
+
+    /**
      * Get config digest from manifest (image id)
      *
      * @param manifest
@@ -213,28 +224,35 @@ public class DockerUtils implements Serializable {
      * Returns number of dependencies layers in the image.
      *
      * @param imageContent
+     * @param parentId
      * @return
      * @throws IOException
      */
-    public static int getNumberOfDependentLayers(String imageContent) throws IOException {
+    public static int getNumberOfDependentLayers(String imageContent, String parentId) throws IOException {
         JsonNode history = Utils.mapper().readTree(imageContent).get("history");
+        // checking dependency layers by checking creation date.
+        String imageCreated = "";
+        if (StringUtils.isNotEmpty(parentId)) {
+            imageCreated = getCreated(parentId);
+        }
+
         int layersNum = history.size();
-        boolean afterLastEntrypoint = true;
+        boolean newImageLayers = true;
         for (int i = history.size() - 1; i >= 0; i--) {
 
-            if (afterLastEntrypoint) {
+            if (newImageLayers) {
                 layersNum--;
             }
 
             JsonNode layer = history.get(i);
             JsonNode emptyLayer = layer.get("empty_layer");
-            if (!afterLastEntrypoint && emptyLayer != null) {
+            if (!newImageLayers && emptyLayer != null) {
                 layersNum--;
             }
 
-            String createdBy = layer.get("created_by").textValue();
-            if (createdBy.contains("ENTRYPOINT")) {
-                afterLastEntrypoint = false;
+            String layerCreated = layer.get("created").textValue();
+            if (StringUtils.equals(imageCreated, layerCreated)) {
+                newImageLayers = false;
             }
         }
         return layersNum;

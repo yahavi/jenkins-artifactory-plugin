@@ -49,6 +49,7 @@ public class DockerAgentUtils implements Serializable {
                 String parentId = DockerUtils.getParentDigest(digest);
                 if (StringUtils.isNotEmpty(parentId)) {
                     properties.setProperty("docker.image.parent", DockerUtils.getShaValue(parentId));
+                    dockerImage.setParentId(parentId);
                 }
                 dockerImage.addProperties(properties);
                 buildInfoIdToDockerImage.put(buildInfoId, dockerImage);

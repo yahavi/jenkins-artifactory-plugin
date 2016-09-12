@@ -34,6 +34,7 @@ public class DockerImage implements Serializable {
     private final String manifest;
     private final String targetRepo;
     private Properties properties = new Properties();
+    private String parentId;
 
     public DockerImage(String imageId, String imageTag, String targetRepo, String manifest) {
         this.imageId = imageId;
@@ -44,6 +45,10 @@ public class DockerImage implements Serializable {
 
     public void addProperties(Properties properties) {
         this.properties.putAll(properties);
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
     }
 
     public Module generateBuildInfoModule(TaskListener listener, ArtifactoryConfigurator config, String buildName, String buildNumber, String timestamp) throws IOException {
@@ -97,7 +102,7 @@ public class DockerImage implements Serializable {
             return;
         }
         HttpResponse res = dependenciesClient.downloadArtifact(server.getUrl() + "/" + historyLayer.getFullPath());
-        int dependencyLayerNum = DockerUtils.getNumberOfDependentLayers(IOUtils.toString(res.getEntity().getContent()));
+        int dependencyLayerNum = DockerUtils.getNumberOfDependentLayers(IOUtils.toString(res.getEntity().getContent()), parentId);
 
         List<Dependency> dependencies = new ArrayList<Dependency>();
         List<Artifact> artifacts = new ArrayList<Artifact>();
@@ -134,11 +139,11 @@ public class DockerImage implements Serializable {
             String shaVersion = DockerUtils.getShaVersion(digest);
             String shaValue = DockerUtils.getShaValue(digest);
 
-            String singleFileQuery = String.format("{\"$and\": [{\"repo\": {\"$eq\" : \"%s\"}}, {\"name\": {\"$eq\" : \"%s\"}}, {\"path\": {\"$eq\": \"%s\"}}]}",
+            String singleFileQuery = String.format("{\"repo\": \"%s\", \"name\": \"%s\", \"path\": \"%s\"}",
                     targetRepo, DockerUtils.digestToFileName(digest), imagePath);
 
             if (StringUtils.equalsIgnoreCase(shaVersion, "sha1")) {
-                singleFileQuery = String.format("{\"$and\": [{\"repo\": {\"$eq\": \"%s\"}}, {\"actual_sha1\": {\"$eq\" : \"%s\"}}, {\"path\": {\"$eq\": \"%s\"}}]}",
+                singleFileQuery = String.format("{\"repo\": \"%s\", \"actual_sha1\": \"%s\", \"path\": \"%s\"}",
                         targetRepo, shaValue, imagePath);
             }
             layersQuery.add(singleFileQuery);
