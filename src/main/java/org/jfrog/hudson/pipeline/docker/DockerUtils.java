@@ -77,7 +77,7 @@ public class DockerUtils implements Serializable {
      * @param digest
      * @return
      */
-    public static String getCreated(String digest) {
+    public static String getImageCreated(String digest) {
         DockerClient dockerClient = DockerClientBuilder.getInstance().build();
         return dockerClient.inspectImageCmd(digest).exec().getCreated();
     }
@@ -188,13 +188,17 @@ public class DockerUtils implements Serializable {
     public static String getImagePath(String imageTag) {
         int indexOfFirstSlash = imageTag.indexOf("/");
         int indexOfLastColon = imageTag.lastIndexOf(":");
+        String imageName;
+        String imageVersion;
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(imageTag.substring(indexOfFirstSlash + 1, indexOfLastColon));
-        stringBuilder.append("/");
-        stringBuilder.append(imageTag.substring(indexOfLastColon + 1));
-
-        return stringBuilder.toString();
+        if (indexOfLastColon < 0) {
+            imageName = imageTag.substring(indexOfFirstSlash + 1);
+            imageVersion = "latest";
+        } else {
+            imageName = imageTag.substring(indexOfFirstSlash + 1, indexOfLastColon);
+            imageVersion = imageTag.substring(indexOfLastColon + 1);
+        }
+        return imageName + "/" + imageVersion;
     }
 
     /**
@@ -228,14 +232,8 @@ public class DockerUtils implements Serializable {
      * @return
      * @throws IOException
      */
-    public static int getNumberOfDependentLayers(String imageContent, String parentId) throws IOException {
+    public static int getNumberOfDependentLayers(String imageContent, String parentImageCreated) throws IOException {
         JsonNode history = Utils.mapper().readTree(imageContent).get("history");
-        // checking dependency layers by checking creation date.
-        String imageCreated = "";
-        if (StringUtils.isNotEmpty(parentId)) {
-            imageCreated = getCreated(parentId);
-        }
-
         int layersNum = history.size();
         boolean newImageLayers = true;
         for (int i = history.size() - 1; i >= 0; i--) {
@@ -251,7 +249,7 @@ public class DockerUtils implements Serializable {
             }
 
             String layerCreated = layer.get("created").textValue();
-            if (StringUtils.equals(imageCreated, layerCreated)) {
+            if (StringUtils.equals(parentImageCreated, layerCreated)) {
                 newImageLayers = false;
             }
         }

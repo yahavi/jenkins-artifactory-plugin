@@ -33,8 +33,8 @@ public class DockerImage implements Serializable {
     private final String imageTag;
     private final String manifest;
     private final String targetRepo;
+    private String parentImageCreated;
     private Properties properties = new Properties();
-    private String parentId;
 
     public DockerImage(String imageId, String imageTag, String targetRepo, String manifest) {
         this.imageId = imageId;
@@ -47,8 +47,8 @@ public class DockerImage implements Serializable {
         this.properties.putAll(properties);
     }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
+    public void setParentImageCreated(String parentImageCreated) {
+        this.parentImageCreated = parentImageCreated;
     }
 
     public Module generateBuildInfoModule(TaskListener listener, ArtifactoryConfigurator config, String buildName, String buildNumber, String timestamp) throws IOException {
@@ -102,7 +102,7 @@ public class DockerImage implements Serializable {
             return;
         }
         HttpResponse res = dependenciesClient.downloadArtifact(server.getUrl() + "/" + historyLayer.getFullPath());
-        int dependencyLayerNum = DockerUtils.getNumberOfDependentLayers(IOUtils.toString(res.getEntity().getContent()), parentId);
+        int dependencyLayerNum = DockerUtils.getNumberOfDependentLayers(IOUtils.toString(res.getEntity().getContent()), parentImageCreated);
 
         List<Dependency> dependencies = new ArrayList<Dependency>();
         List<Artifact> artifacts = new ArrayList<Artifact>();
