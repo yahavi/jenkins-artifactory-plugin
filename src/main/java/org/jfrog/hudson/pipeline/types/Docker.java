@@ -43,38 +43,20 @@ public class Docker implements Serializable {
 
     @Whitelisted
     public BuildInfo push(String imageTag, String targetRepository, BuildInfo providedBuildInfo) throws Exception {
-        Map<String, Object> registerVariables = new LinkedHashMap<String, Object>();
-        registerVariables.put("imageTag", imageTag);
-        registerVariables.put("targetRepo", targetRepository);
-        registerVariables.put("buildInfo", providedBuildInfo);
-
-        BuildInfo buildInfo = (BuildInfo) script.invokeMethod("registerDockerImageStep", registerVariables);
-        buildInfo.setCpsScript(script);
-
-        Map<String, Object> pushVariables = new LinkedHashMap<String, Object>();
-        pushVariables.put("imageTag", imageTag);
-        pushVariables.put("username", username);
-        pushVariables.put("password", password);
-        script.invokeMethod("dockerPush", pushVariables);
-
-        return buildInfo;
+        Map<String, Object> dockerArguments = new LinkedHashMap<String, Object>();
+        dockerArguments.put("image", imageTag);
+        dockerArguments.put("targetRepo", targetRepository);
+        dockerArguments.put("buildInfo", providedBuildInfo);
+        return push(dockerArguments);
     }
 
     @Whitelisted
     public BuildInfo push(Map<String, Object> dockerArguments) throws Exception {
-        Map<String, Object> registerVariables = new LinkedHashMap<String, Object>();
-        registerVariables.put("imageTag", dockerArguments.get("image"));
-        registerVariables.put("targetRepo", dockerArguments.get("targetRepo"));
-        registerVariables.put("buildInfo", dockerArguments.get("buildInfo"));
-
-        BuildInfo buildInfo = (BuildInfo) script.invokeMethod("registerDockerImageStep", registerVariables);
+        dockerArguments.put("username", username);
+        dockerArguments.put("password", password);
+        BuildInfo buildInfo = (BuildInfo) script.invokeMethod("registerDockerImageStep", dockerArguments);
         buildInfo.setCpsScript(script);
-
-        Map<String, Object> pushVariables = new LinkedHashMap<String, Object>();
-        pushVariables.put("imageTag", dockerArguments.get("image"));
-        pushVariables.put("username", username);
-        pushVariables.put("password", password);
-        script.invokeMethod("dockerPush", pushVariables);
+        script.invokeMethod("dockerPush", dockerArguments);
 
         return buildInfo;
     }
@@ -87,11 +69,16 @@ public class Docker implements Serializable {
     @Whitelisted
     public BuildInfo pull(String imageTag, BuildInfo providedBuildInfo) throws Exception {
         Map<String, Object> pullVariables = new LinkedHashMap<String, Object>();
-        pullVariables.put("imageTag", imageTag);
-        pullVariables.put("username", username);
-        pullVariables.put("password", password);
-        script.invokeMethod("dockerPull", pullVariables);
+        pullVariables.put("image", imageTag);
+        pullVariables.put("buildInfo", providedBuildInfo);
 
-        return providedBuildInfo;
+        return pull(pullVariables);
+    }
+
+    @Whitelisted
+    public BuildInfo pull(Map<String, Object> dockerArguments) throws Exception {
+        dockerArguments.put("username", username);
+        dockerArguments.put("password", password);
+        return (BuildInfo) script.invokeMethod("dockerPull", dockerArguments);
     }
 }

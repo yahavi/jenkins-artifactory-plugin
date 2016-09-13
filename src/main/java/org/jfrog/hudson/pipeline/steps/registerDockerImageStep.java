@@ -22,19 +22,19 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class registerDockerImageStep extends AbstractStepImpl {
 
-    private final String imageTag;
+    private final String image;
     private final BuildInfo buildInfo;
     private final String targetRepo;
 
     @DataBoundConstructor
-    public registerDockerImageStep(String imageTag, String targetRepo, BuildInfo buildInfo) {
-        this.imageTag = imageTag;
+    public registerDockerImageStep(String image, String targetRepo, BuildInfo buildInfo) {
+        this.image = image;
         this.buildInfo = buildInfo;
         this.targetRepo = targetRepo;
     }
 
-    public String getImageTag() {
-        return imageTag;
+    public String getImage() {
+        return image;
     }
 
     public BuildInfo getBuildInfo() {
@@ -68,22 +68,21 @@ public class registerDockerImageStep extends AbstractStepImpl {
             BuildInfo buildInfo = Utils.prepareBuildinfo(build, step.getBuildInfo());
             JenkinsBuildInfoLog log = new JenkinsBuildInfoLog(listener);
             if (!DockerAgentUtils.isProxyUp(launcher)) {
-                getContext().onFailure(new RuntimeException("Build info capturing for DockerBuildInfo images is not available while Artifactory proxy is not running, enable the proxy in Jenkins configuration."));
+                getContext().onFailure(new RuntimeException("Build info capturing for Docker images is not available while Artifactory proxy is not running, enable the proxy in Jenkins configuration."));
                 return null;
             }
 
-            if (step.getImageTag() == null) {
+            if (step.getImage() == null) {
                 getContext().onFailure(new MissingArgumentException("Missing 'image' parameter"));
                 return null;
             }
 
-            if (step.getImageTag() == null) {
+            if (step.getTargetRepo() == null) {
                 getContext().onFailure(new MissingArgumentException("Missing 'targetRepo' parameter"));
                 return null;
             }
 
-            log.info("Build info will be captured for docker image: " + step.getImageTag());
-            DockerAgentUtils.registerProxy(launcher, step.getImageTag(), step.getTargetRepo(), buildInfo.hashCode());
+            DockerAgentUtils.registerProxy(launcher, step.getImage(), step.getTargetRepo(), buildInfo.hashCode());
             return buildInfo;
         }
     }

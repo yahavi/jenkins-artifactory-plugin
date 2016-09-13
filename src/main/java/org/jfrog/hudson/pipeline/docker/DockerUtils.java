@@ -204,7 +204,7 @@ public class DockerUtils implements Serializable {
     public static Boolean isImageVersioned(String imageTag) {
         int indexOfFirstSlash = imageTag.indexOf("/");
         int indexOfLastColon = imageTag.lastIndexOf(":");
-        return indexOfFirstSlash > indexOfLastColon;
+        return indexOfFirstSlash < indexOfLastColon;
     }
 
     /**

@@ -6,6 +6,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import org.apache.commons.cli.MissingArgumentException;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousStepExecution;
@@ -19,19 +20,19 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class DockerPush extends AbstractStepImpl {
 
-    private final String imageTag;
+    private final String image;
     private String username;
     private String password;
 
     @DataBoundConstructor
-    public DockerPush(String imageTag, String username, String password) {
-        this.imageTag = imageTag;
+    public DockerPush(String image, String username, String password) {
+        this.image = image;
         this.username = username;
         this.password = password;
     }
 
-    public String getImageTag() {
-        return imageTag;
+    public String getImage() {
+        return image;
     }
 
     public String getUsername() {
@@ -63,10 +64,14 @@ public class DockerPush extends AbstractStepImpl {
         @Override
         protected Boolean run() throws Exception {
             JenkinsBuildInfoLog log = new JenkinsBuildInfoLog(listener);
-            log.info("Pushing image: " + step.getImageTag());
 
-            DockerAgentUtils.pushImage(launcher, step.getImageTag(), step.getUsername(), step.getPassword());
-            log.info("Successfully pushed image.");
+            if (step.getImage() == null) {
+                getContext().onFailure(new MissingArgumentException("Missing 'image' parameter"));
+                return null;
+            }
+
+            DockerAgentUtils.pushImage(launcher, step.getImage(), step.getUsername(), step.getPassword());
+            log.info("Successfully pushed docker image: " + step.getImage());
             return true;
         }
     }

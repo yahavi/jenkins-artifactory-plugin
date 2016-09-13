@@ -6,12 +6,15 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import org.apache.commons.cli.MissingArgumentException;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousStepExecution;
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
+import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.docker.DockerAgentUtils;
 import org.jfrog.hudson.pipeline.docker.DockerUtils;
+import org.jfrog.hudson.pipeline.types.BuildInfo;
 import org.jfrog.hudson.util.JenkinsBuildInfoLog;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -20,19 +23,25 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 public class DockerPull extends AbstractStepImpl {
 
-    private final String imageTag;
+    private final String image;
     private String username;
     private String password;
+    private final BuildInfo buildInfo;
 
     @DataBoundConstructor
-    public DockerPull(String imageTag, String username, String password) {
-        this.imageTag = imageTag;
+    public DockerPull(String image, String username, String password, BuildInfo buildInfo) {
+        this.image = image;
         this.username = username;
         this.password = password;
+        this.buildInfo = buildInfo;
     }
 
-    public String getImageTag() {
-        return imageTag;
+    public BuildInfo getBuildInfo() {
+        return buildInfo;
+    }
+
+    public String getImage() {
+        return image;
     }
 
     public String getUsername() {
@@ -43,7 +52,7 @@ public class DockerPull extends AbstractStepImpl {
         return password;
     }
 
-    public static class Execution extends AbstractSynchronousStepExecution<Boolean> {
+    public static class Execution extends AbstractSynchronousStepExecution<BuildInfo> {
         private static final long serialVersionUID = 1L;
 
         @Inject(optional = true)
@@ -62,17 +71,24 @@ public class DockerPull extends AbstractStepImpl {
         private transient FilePath ws;
 
         @Override
-        protected Boolean run() throws Exception {
+        protected BuildInfo run() throws Exception {
             JenkinsBuildInfoLog log = new JenkinsBuildInfoLog(listener);
 
-            String imageTag = step.getImageTag();
+            if (step.getImage() == null) {
+                getContext().onFailure(new MissingArgumentException("Missing 'image' parameter"));
+                return null;
+            }
+
+            BuildInfo buildInfo = Utils.prepareBuildinfo(build, step.getBuildInfo());
+
+            String imageTag = step.getImage();
             if (!DockerUtils.isImageVersioned(imageTag)) {
                 imageTag += ":latest";
             }
 
             DockerAgentUtils.pullImage(launcher, imageTag, step.getUsername(), step.getPassword());
-            log.info("Successfully pulled image.");
-            return true;
+            log.info("Successfully pulled docker image: " + imageTag);
+            return buildInfo;
         }
     }
 
