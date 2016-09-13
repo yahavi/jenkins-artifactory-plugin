@@ -201,6 +201,12 @@ public class DockerUtils implements Serializable {
         return imageName + "/" + imageVersion;
     }
 
+    public static Boolean isImageVersioned(String imageTag) {
+        int indexOfFirstSlash = imageTag.indexOf("/");
+        int indexOfLastColon = imageTag.lastIndexOf(":");
+        return indexOfFirstSlash > indexOfLastColon;
+    }
+
     /**
      * layer file name to digest format
      *
@@ -228,11 +234,10 @@ public class DockerUtils implements Serializable {
      * Returns number of dependencies layers in the image.
      *
      * @param imageContent
-     * @param parentId
      * @return
      * @throws IOException
      */
-    public static int getNumberOfDependentLayers(String imageContent, String parentImageCreated) throws IOException {
+    public static int getNumberOfDependentLayers(String imageContent) throws IOException {
         JsonNode history = Utils.mapper().readTree(imageContent).get("history");
         int layersNum = history.size();
         boolean newImageLayers = true;
@@ -248,8 +253,8 @@ public class DockerUtils implements Serializable {
                 layersNum--;
             }
 
-            String layerCreated = layer.get("created").textValue();
-            if (StringUtils.equals(parentImageCreated, layerCreated)) {
+            String createdBy = layer.get("created_by").textValue();
+            if (createdBy.contains("ENTRYPOINT") || createdBy.contains("MAINTAINER")) {
                 newImageLayers = false;
             }
         }

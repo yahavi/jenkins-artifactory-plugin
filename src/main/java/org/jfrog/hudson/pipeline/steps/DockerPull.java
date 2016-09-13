@@ -11,6 +11,7 @@ import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousStepExecution;
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.jfrog.hudson.pipeline.docker.DockerAgentUtils;
+import org.jfrog.hudson.pipeline.docker.DockerUtils;
 import org.jfrog.hudson.util.JenkinsBuildInfoLog;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -63,9 +64,13 @@ public class DockerPull extends AbstractStepImpl {
         @Override
         protected Boolean run() throws Exception {
             JenkinsBuildInfoLog log = new JenkinsBuildInfoLog(listener);
-            log.info("Pulling image: " + step.getImageTag());
 
-            DockerAgentUtils.pullImage(launcher, step.getImageTag(), step.getUsername(), step.getPassword());
+            String imageTag = step.getImageTag();
+            if (!DockerUtils.isImageVersioned(imageTag)) {
+                imageTag += ":latest";
+            }
+
+            DockerAgentUtils.pullImage(launcher, imageTag, step.getUsername(), step.getPassword());
             log.info("Successfully pulled image.");
             return true;
         }
