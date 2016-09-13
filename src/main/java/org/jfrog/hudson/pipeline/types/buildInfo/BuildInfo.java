@@ -6,7 +6,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jfrog.build.api.*;

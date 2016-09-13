@@ -58,7 +58,7 @@ public class BuildInfoDeployer extends AbstractBuildInfoDeployer {
     }
 
     private void addVcsDataToBuild(Run build) {
-        List<Vcs> vcsList = PipelineUtils.extractVcsBuildData(build);
+        List<Vcs> vcsList = Utils.extractVcsBuildData(build);
         buildInfo.setVcs(vcsList);
     }
 

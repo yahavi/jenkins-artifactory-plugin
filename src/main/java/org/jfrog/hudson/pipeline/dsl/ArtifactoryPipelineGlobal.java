@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
 import org.jfrog.hudson.pipeline.types.ArtifactoryServer;
-import org.jfrog.hudson.pipeline.types.BuildInfo;
 import org.jfrog.hudson.pipeline.types.Docker;
 import org.jfrog.hudson.pipeline.types.GradleBuild;
 import org.jfrog.hudson.pipeline.types.MavenBuild;

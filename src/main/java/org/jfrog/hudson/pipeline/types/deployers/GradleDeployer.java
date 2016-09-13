@@ -4,7 +4,7 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jfrog.hudson.RepositoryConf;
 import org.jfrog.hudson.ServerDetails;
 import org.jfrog.hudson.action.ActionableHelper;
-import org.jfrog.hudson.pipeline.PipelineUtils;
+import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.util.publisher.PublisherContext;
 
 /**
@@ -85,7 +85,7 @@ public class GradleDeployer extends Deployer {
         return new PublisherContext.Builder()
                 .artifactoryServer(getArtifactoryServer())
                 .serverDetails(getDetails())
-                .deployArtifacts(isDeployArtifacts()).includesExcludes(PipelineUtils.getArtifactsIncludeExcludeForDeyployment(getArtifactDeploymentPatterns().getPatternFilter()))
+                .deployArtifacts(isDeployArtifacts()).includesExcludes(Utils.getArtifactsIncludeExcludeForDeyployment(getArtifactDeploymentPatterns().getPatternFilter()))
                 .skipBuildInfoDeploy(!isDeployBuildInfo())
                 .artifactsPattern(getArtifactPattern()).ivyPattern(getIvyPattern())
                 .deployIvy(isDeployIvy()).deployMaven(isDeployMaven())

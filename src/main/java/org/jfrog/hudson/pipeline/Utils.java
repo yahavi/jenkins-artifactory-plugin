@@ -11,7 +11,6 @@ import hudson.plugins.git.util.BuildData;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jfrog.build.api.BuildInfoFields;
 import org.jfrog.build.api.Vcs;
 import org.jfrog.build.extractor.clientConfiguration.IncludeExcludePatterns;

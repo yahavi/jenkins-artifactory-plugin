@@ -61,10 +61,7 @@ public class DownloadStep extends AbstractStepImpl {
 
         @Override
         protected BuildInfo run() throws Exception {
-            BuildInfo build = new GenericDownloadExecutor(Utils.prepareArtifactoryServer(null, step.getServer()), this.listener, this.build, this.ws, step.getBuildInfo()).execution(step.getSpec());
-            new BuildInfoAccessor(build).captureVariables(getContext());
-            return build;
-            BuildInfo buildInfo = new GenericDownloadExecutor(PipelineUtils.prepareArtifactoryServer(null, step.getServer()), this.listener, this.build, this.ws, step.getBuildInfo()).execution(step.getSpec());
+            BuildInfo buildInfo = new GenericDownloadExecutor(Utils.prepareArtifactoryServer(null, step.getServer()), this.listener, this.build, this.ws, step.getBuildInfo()).execution(step.getSpec());
             new BuildInfoAccessor(buildInfo).captureVariables(env, build, listener);
             return buildInfo;
         }

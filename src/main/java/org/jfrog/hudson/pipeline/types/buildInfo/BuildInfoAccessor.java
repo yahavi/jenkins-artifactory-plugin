@@ -1,7 +1,7 @@
 package org.jfrog.hudson.pipeline.types.buildInfo;
 
-import hudson.Launcher;
 import hudson.EnvVars;
+import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import org.jfrog.build.api.Artifact;
@@ -16,7 +16,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by Tamirh on 16/05/2016.

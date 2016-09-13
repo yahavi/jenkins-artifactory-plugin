@@ -13,7 +13,7 @@ import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousStepExecution;
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.docker.DockerAgentUtils;
-import org.jfrog.hudson.pipeline.types.BuildInfo;
+import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo;
 import org.jfrog.hudson.util.JenkinsBuildInfoLog;
 import org.kohsuke.stapler.DataBoundConstructor;
 

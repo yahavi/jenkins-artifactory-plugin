@@ -101,12 +101,17 @@ public class DockerPullStep extends AbstractStepImpl {
 
         @Override
         public String getFunctionName() {
-            return "dockerPull";
+            return "dockerPullStep";
         }
 
         @Override
         public String getDisplayName() {
             return "Artifactory docker push";
+        }
+
+        @Override
+        public boolean isAdvanced() {
+            return true;
         }
     }
 

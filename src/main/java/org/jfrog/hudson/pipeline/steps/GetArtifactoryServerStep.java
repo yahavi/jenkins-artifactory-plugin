@@ -18,7 +18,6 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by romang on 4/21/16.
@@ -68,7 +67,7 @@ public class GetArtifactoryServerStep extends AbstractStepImpl {
             }
             ArtifactoryServer server = artifactoryServers.get(0);
             org.jfrog.hudson.pipeline.types.ArtifactoryServer artifactoryPipelineServer = new org.jfrog.hudson.pipeline.types.ArtifactoryServer(artifactoryServerID, server.getUrl(),
-                server.getResolvingCredentialsConfig().provideUsername(build.getParent()), server.getResolvingCredentialsConfig().providePassword(build.getParent()));
+                    server.getResolvingCredentialsConfig().provideUsername(build.getParent()), server.getResolvingCredentialsConfig().providePassword(build.getParent()));
             artifactoryPipelineServer.setBypassProxy(server.isBypassProxy());
             return artifactoryPipelineServer;
         }

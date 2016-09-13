@@ -2,6 +2,7 @@ package org.jfrog.hudson.pipeline.types;
 
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
+import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -56,7 +57,7 @@ public class Docker implements Serializable {
         dockerArguments.put("password", password);
         BuildInfo buildInfo = (BuildInfo) script.invokeMethod("registerDockerImageStep", dockerArguments);
         buildInfo.setCpsScript(script);
-        script.invokeMethod("dockerPush", dockerArguments);
+        script.invokeMethod("dockerPushStep", dockerArguments);
 
         return buildInfo;
     }
@@ -79,6 +80,6 @@ public class Docker implements Serializable {
     public BuildInfo pull(Map<String, Object> dockerArguments) throws Exception {
         dockerArguments.put("username", username);
         dockerArguments.put("password", password);
-        return (BuildInfo) script.invokeMethod("dockerPull", dockerArguments);
+        return (BuildInfo) script.invokeMethod("dockerPullStep", dockerArguments);
     }
 }
