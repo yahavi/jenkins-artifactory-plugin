@@ -1,15 +1,15 @@
-package org.jfrog.hudson.pipeline.types;
+package org.jfrog.hudson.pipeline.types.buildInfo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.workflow.cps.CpsScript;
-import org.jfrog.build.api.Artifact;
-import org.jfrog.build.api.Dependency;
-import org.jfrog.build.api.Module;
+import org.jfrog.build.api.*;
 import org.jfrog.build.api.builder.ModuleBuilder;
 import org.jfrog.build.api.dependency.BuildDependency;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
@@ -91,6 +91,28 @@ public class BuildInfo implements Serializable {
         this.env.append(other.env);
     }
 
+    public void append(Build other) {
+        Properties properties = other.getProperties();
+        Env otherEnv = new Env();
+        if (properties != null) {
+            for (String key : properties.stringPropertyNames()) {
+                boolean isEnvVar = StringUtils.startsWith(key, BuildInfoProperties.BUILD_INFO_ENVIRONMENT_PREFIX);
+                if (isEnvVar) {
+                    otherEnv.getEnvVars().put(StringUtils.substringAfter(key, BuildInfoProperties.BUILD_INFO_ENVIRONMENT_PREFIX), properties.getProperty(key));
+                } else {
+                    otherEnv.getSysVars().put(key, properties.getProperty(key));
+                }
+            }
+            this.env.append(otherEnv);
+        }
+        if (other.getModules() != null) {
+            this.modules.addAll(other.getModules());
+        }
+        if (other.getBuildDependencies() != null) {
+            this.buildDependencies.addAll(other.getBuildDependencies());
+        }
+    }
+
     @Whitelisted
     public Env getEnv() {
         return env;
@@ -155,8 +177,8 @@ public class BuildInfo implements Serializable {
 
         ArtifactoryConfigurator config = new ArtifactoryConfigurator(server);
         CredentialsConfig preferredDeployer = CredentialManager.getPreferredDeployer(config, server);
-        ArtifactoryBuildInfoClient client = server.createArtifactoryClient(preferredDeployer.getUsername(),
-                preferredDeployer.getPassword(), server.createProxyConfiguration(Jenkins.getInstance().proxy));
+        ArtifactoryBuildInfoClient client = server.createArtifactoryClient(preferredDeployer.provideUsername(build.getParent()),
+                preferredDeployer.providePassword(build.getParent()), server.createProxyConfiguration(Jenkins.getInstance().proxy));
 
         List<Module> dockerModules = dockerBuildInfo.generateBuildInfoModules(listener, config, launcher);
         addDockerBuildInfoModules(dockerModules);

@@ -1,4 +1,4 @@
-package org.jfrog.hudson.pipeline.types;
+package org.jfrog.hudson.pipeline.types.buildInfo;
 
 import hudson.Launcher;
 import hudson.model.TaskListener;

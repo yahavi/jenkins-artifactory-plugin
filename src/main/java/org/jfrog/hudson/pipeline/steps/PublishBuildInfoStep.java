@@ -10,8 +10,8 @@ import org.jenkinsci.plugins.workflow.steps.*;
 import org.jfrog.hudson.pipeline.BuildInfoDeployer;
 import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.types.ArtifactoryServer;
-import org.jfrog.hudson.pipeline.types.BuildInfo;
-import org.jfrog.hudson.pipeline.types.BuildInfoAccessor;
+import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo;
+import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfoAccessor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.HashMap;
@@ -83,6 +83,11 @@ public class PublishBuildInfoStep extends AbstractStepImpl {
         @Override
         public Map<String, Object> defineArguments(Step step) throws UnsupportedOperationException {
             return new HashMap<String, Object>();
+        }
+
+        @Override
+        public boolean isAdvanced() {
+            return true;
         }
     }
 

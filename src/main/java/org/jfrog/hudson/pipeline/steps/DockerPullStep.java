@@ -14,14 +14,14 @@ import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.jfrog.hudson.pipeline.Utils;
 import org.jfrog.hudson.pipeline.docker.DockerAgentUtils;
 import org.jfrog.hudson.pipeline.docker.DockerUtils;
-import org.jfrog.hudson.pipeline.types.BuildInfo;
+import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo;
 import org.jfrog.hudson.util.JenkinsBuildInfoLog;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Created by romang on 5/2/16.
  */
-public class DockerPull extends AbstractStepImpl {
+public class DockerPullStep extends AbstractStepImpl {
 
     private final String image;
     private String username;
@@ -29,7 +29,7 @@ public class DockerPull extends AbstractStepImpl {
     private final BuildInfo buildInfo;
 
     @DataBoundConstructor
-    public DockerPull(String image, String username, String password, BuildInfo buildInfo) {
+    public DockerPullStep(String image, String username, String password, BuildInfo buildInfo) {
         this.image = image;
         this.username = username;
         this.password = password;
@@ -56,7 +56,7 @@ public class DockerPull extends AbstractStepImpl {
         private static final long serialVersionUID = 1L;
 
         @Inject(optional = true)
-        private transient DockerPull step;
+        private transient DockerPullStep step;
 
         @StepContextParameter
         private transient TaskListener listener;
@@ -96,7 +96,7 @@ public class DockerPull extends AbstractStepImpl {
     public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
 
         public DescriptorImpl() {
-            super(DockerPull.Execution.class);
+            super(DockerPullStep.Execution.class);
         }
 
         @Override

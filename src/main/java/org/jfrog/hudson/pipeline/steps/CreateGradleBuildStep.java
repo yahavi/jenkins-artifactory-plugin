@@ -1,36 +1,24 @@
 package org.jfrog.hudson.pipeline.steps;
 
-import com.google.inject.Inject;
 import hudson.Extension;
-import hudson.model.Run;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepDescriptorImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractStepImpl;
 import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousStepExecution;
-import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
-import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo;
+import org.jfrog.hudson.pipeline.types.GradleBuild;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-/**
- * Created by romang on 5/2/16.
- */
-public class CreateBuildInfoStep extends AbstractStepImpl {
+public class CreateGradleBuildStep extends AbstractStepImpl {
 
     @DataBoundConstructor
-    public CreateBuildInfoStep() {
+    public CreateGradleBuildStep() {
     }
 
-    public static class Execution extends AbstractSynchronousStepExecution<BuildInfo> {
+    public static class Execution extends AbstractSynchronousStepExecution<GradleBuild> {
         private static final long serialVersionUID = 1L;
 
-        @StepContextParameter
-        private transient Run build;
-
-        @Inject(optional = true)
-        private transient CreateBuildInfoStep step;
-
         @Override
-        protected BuildInfo run() throws Exception {
-            return new BuildInfo(build);
+        protected GradleBuild run() throws Exception {
+            return new GradleBuild();
         }
     }
 
@@ -38,17 +26,17 @@ public class CreateBuildInfoStep extends AbstractStepImpl {
     public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
 
         public DescriptorImpl() {
-            super(CreateBuildInfoStep.Execution.class);
+            super(CreateGradleBuildStep.Execution.class);
         }
 
         @Override
         public String getFunctionName() {
-            return "newBuildInfo";
+            return "newGradleBuild";
         }
 
         @Override
         public String getDisplayName() {
-            return "New buildInfo";
+            return "New Artifactory gradle executor";
         }
 
         @Override

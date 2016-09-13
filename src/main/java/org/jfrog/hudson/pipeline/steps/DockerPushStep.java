@@ -18,14 +18,14 @@ import org.kohsuke.stapler.DataBoundConstructor;
 /**
  * Created by romang on 5/2/16.
  */
-public class DockerPush extends AbstractStepImpl {
+public class DockerPushStep extends AbstractStepImpl {
 
     private final String image;
     private String username;
     private String password;
 
     @DataBoundConstructor
-    public DockerPush(String image, String username, String password) {
+    public DockerPushStep(String image, String username, String password) {
         this.image = image;
         this.username = username;
         this.password = password;
@@ -47,7 +47,7 @@ public class DockerPush extends AbstractStepImpl {
         private static final long serialVersionUID = 1L;
 
         @Inject(optional = true)
-        private transient DockerPush step;
+        private transient DockerPushStep step;
 
         @StepContextParameter
         private transient TaskListener listener;
@@ -80,7 +80,7 @@ public class DockerPush extends AbstractStepImpl {
     public static final class DescriptorImpl extends AbstractStepDescriptorImpl {
 
         public DescriptorImpl() {
-            super(DockerPush.Execution.class);
+            super(DockerPushStep.Execution.class);
         }
 
         @Override
