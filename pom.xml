@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.521</version>
+        <version>3.2</version>
     </parent>
 
     <artifactId>artifactory</artifactId>
@@ -30,18 +30,24 @@
     <url>http://wiki.jenkins-ci.org/display/JENKINS/Artifactory+Plugin</url>
 
     <properties>
+        <!-- Minimal version required by Pipeline dependencies in 2.14.0 -->
+        <jenkins.version>1.642.3</jenkins.version>
+        <java.level>7</java.level>
+        <!-- TODO: enforcer is full of upper bound dependency issues, including real ones -->
+        <enforcer.skip>true</enforcer.skip>
+        <findbugs.failOnError>false</findbugs.failOnError>
+
         <buildinfo.version>2.9.x-SNAPSHOT</buildinfo.version>
         <buildinfo.maven3.version>2.9.x-SNAPSHOT</buildinfo.maven3.version>
         <buildinfo.gradle.version>4.6.x-SNAPSHOT</buildinfo.gradle.version>
         <buildinfo.ivy.version>2.9.x-SNAPSHOT</buildinfo.ivy.version>
-        <maven-release-plugin.version>2.2</maven-release-plugin.version>
     </properties>
 
     <developers>
         <developer>
-            <id>yossis</id>
-            <name>Yossi Shaul</name>
-            <email>yossis@jfrog.org</email>
+            <id>eyalb</id>
+            <name>Eyal Ben Moshe</name>
+            <email>eyalb@jfrog.org</email>
             <roles>
                 <role>Lead Developer</role>
             </roles>
@@ -70,7 +76,7 @@
         <dependency>
             <groupId>org.jenkins-ci.main</groupId>
             <artifactId>maven-plugin</artifactId>
-            <version>2.15.1</version>
+            <version>3.1</version>
             <exclusions>
                 <exclusion>
                     <artifactId>httpcore</artifactId>
@@ -85,7 +91,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>subversion</artifactId>
-            <version>2.5</version>
+            <version>2.10.1</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -236,14 +242,6 @@
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>*</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.apache.maven</groupId>
-                    <artifactId>maven-project</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.maven</groupId>
-                    <artifactId>maven-model</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -389,13 +387,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jenkins-ci.tools</groupId>
-                <artifactId>maven-hpi-plugin</artifactId>
-                <configuration>
-                    <pluginFirstClassLoader>true</pluginFirstClassLoader>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.10.3</version>
@@ -448,13 +439,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.0</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>enforce</goal>
                         </goals>
-                        <configuration>
+                        <configuration combine.children="append">
                             <rules>
                                 <bannedDependencies>
                                     <excludes>
