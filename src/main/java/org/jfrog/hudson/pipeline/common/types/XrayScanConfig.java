@@ -12,7 +12,6 @@ public class XrayScanConfig implements Serializable {
     private Boolean failBuild;
 
     public XrayScanConfig() {
-        failBuild = Boolean.FALSE;
     }
 
     public XrayScanConfig(String buildName, String buildNumber, Boolean failBuild) {
