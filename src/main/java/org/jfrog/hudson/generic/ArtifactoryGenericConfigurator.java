@@ -20,8 +20,8 @@ import org.jfrog.build.api.Artifact;
 import org.jfrog.build.api.Dependency;
 import org.jfrog.build.api.dependency.BuildDependency;
 import org.jfrog.build.client.ProxyConfiguration;
+import org.jfrog.build.extractor.clientConfiguration.ArtifactoryDependenciesClientBuilder;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
-import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryDependenciesClient;
 import org.jfrog.hudson.*;
 import org.jfrog.hudson.action.ActionableHelper;
 import org.jfrog.hudson.release.promotion.UnifiedPromoteBuildAction;
@@ -307,7 +307,6 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
             proxyConfiguration = ArtifactoryServer.createProxyConfiguration(proxy);
         }
 
-        ArtifactoryDependenciesClient dependenciesClient = null;
         try {
             if (isUseSpecs()) {
                 String spec = SpecUtils.getSpecStringFromSpecConf(downloadSpec, build.getEnvironment(listener),
@@ -316,8 +315,8 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
                 publishedDependencies = workspace.act(new FilesResolverCallable(
                         new JenkinsBuildInfoLog(listener), username, password, resolverServer.getUrl(), spec, proxyConfiguration));
             } else {
-                dependenciesClient = resolverServer.createArtifactoryDependenciesClient(username, password, proxyConfiguration, listener);
-                GenericArtifactsResolver artifactsResolver = new GenericArtifactsResolver(build, listener, dependenciesClient);
+                ArtifactoryDependenciesClientBuilder dependenciesClientBuilder = resolverServer.createArtifactoryDependenciesClientBuilder(username, password, proxyConfiguration, listener);
+                GenericArtifactsResolver artifactsResolver = new GenericArtifactsResolver(build, listener, dependenciesClientBuilder);
                 publishedDependencies = artifactsResolver.retrievePublishedDependencies(resolvePattern);
                 buildDependencies = artifactsResolver.retrieveBuildDependencies(resolvePattern);
             }
@@ -326,10 +325,6 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
         } catch (Exception e) {
             e.printStackTrace(listener.error(e.getMessage()));
             build.setResult(Result.FAILURE);
-        } finally {
-            if (dependenciesClient != null) {
-                dependenciesClient.close();
-            }
         }
         return null;
     }

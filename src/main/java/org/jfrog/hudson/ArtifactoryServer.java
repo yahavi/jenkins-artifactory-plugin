@@ -28,9 +28,9 @@ import org.jfrog.build.client.ArtifactoryHttpClient;
 import org.jfrog.build.client.ArtifactoryVersion;
 import org.jfrog.build.client.ProxyConfiguration;
 import org.jfrog.build.extractor.clientConfiguration.ArtifactoryBuildInfoClientBuilder;
+import org.jfrog.build.extractor.clientConfiguration.ArtifactoryDependenciesClientBuilder;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBaseClient;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
-import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryDependenciesClient;
 import org.jfrog.hudson.util.CredentialManager;
 import org.jfrog.hudson.util.Credentials;
 import org.jfrog.hudson.util.JenkinsBuildInfoLog;
@@ -329,18 +329,19 @@ public class ArtifactoryServer implements Serializable {
     /**
      * This method might run on slaves, this is why we provide it with a proxy from the master config
      */
-    public ArtifactoryDependenciesClient createArtifactoryDependenciesClient(String userName, String password,
-                                                                             ProxyConfiguration proxyConfiguration, TaskListener listener) {
-        ArtifactoryDependenciesClient client = new ArtifactoryDependenciesClient(url, userName, password,
-                new JenkinsBuildInfoLog(listener));
-        client.setConnectionTimeout(timeout);
-        setRetryParams(client);
-        if (!bypassProxy && proxyConfiguration != null) {
-            client.setProxyConfiguration(proxyConfiguration.host, proxyConfiguration.port, proxyConfiguration.username,
-                    proxyConfiguration.password);
+    public ArtifactoryDependenciesClientBuilder createArtifactoryDependenciesClientBuilder(String userName, String password,
+                                                                                           ProxyConfiguration proxyConfiguration, TaskListener listener) {
+        ArtifactoryDependenciesClientBuilder builder = new ArtifactoryDependenciesClientBuilder()
+                .setArtifactoryUrl(url)
+                .setUsername(userName)
+                .setPassword(password)
+                .setLog(new JenkinsBuildInfoLog(listener))
+                .setConnectionTimeout(timeout)
+                .setConnectionRetry(getConnectionRetry());
+        if (!bypassProxy) {
+            builder.setProxyConfiguration(proxyConfiguration);
         }
-
-        return client;
+        return builder;
     }
 
     /**

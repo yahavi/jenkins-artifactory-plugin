@@ -16,6 +16,7 @@ import org.jfrog.build.api.builder.ArtifactBuilder;
 import org.jfrog.build.api.builder.DependencyBuilder;
 import org.jfrog.build.api.search.AqlSearchResult;
 import org.jfrog.build.client.ArtifactoryVersion;
+import org.jfrog.build.extractor.clientConfiguration.ArtifactoryDependenciesClientBuilder;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryBuildInfoClient;
 import org.jfrog.build.extractor.clientConfiguration.client.ArtifactoryDependenciesClient;
 import org.jfrog.hudson.ArtifactoryServer;
@@ -128,14 +129,12 @@ public class DockerImage implements Serializable {
 
         ArtifactoryServer server = config.getArtifactoryServer();
         CredentialsConfig preferredResolver = server.getDeployerCredentialsConfig();
-        ArtifactoryDependenciesClient dependenciesClient = null;
+        ArtifactoryDependenciesClientBuilder dependenciesClientBuilder = server.createArtifactoryDependenciesClientBuilder(
+                preferredResolver.provideUsername(build.getParent()), preferredResolver.providePassword(build.getParent()),
+                server.createProxyConfiguration(Jenkins.getInstance().proxy), listener);
         ArtifactoryBuildInfoClient propertyChangeClient = null;
 
-        try {
-            dependenciesClient = server.createArtifactoryDependenciesClient(
-                    preferredResolver.provideUsername(build.getParent()), preferredResolver.providePassword(build.getParent()),
-                    server.createProxyConfiguration(Jenkins.getInstance().proxy), listener);
-
+        try (ArtifactoryDependenciesClient dependenciesClient = dependenciesClientBuilder.build()) {
             CredentialsConfig preferredDeployer = CredentialManager.getPreferredDeployer(config, server);
             propertyChangeClient = server.createArtifactoryClient(
                     preferredDeployer.provideUsername(build.getParent()), preferredDeployer.providePassword(build.getParent()),
@@ -159,9 +158,6 @@ public class DockerImage implements Serializable {
             setBuildInfoModuleProps(buildInfoModule);
             return buildInfoModule;
         } finally {
-            if (dependenciesClient != null) {
-                dependenciesClient.close();
-            }
             if (propertyChangeClient != null) {
                 propertyChangeClient.close();
             }
