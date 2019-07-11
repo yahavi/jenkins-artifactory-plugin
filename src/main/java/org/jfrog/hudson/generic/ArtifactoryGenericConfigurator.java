@@ -414,7 +414,6 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
 
     @Extension(optional = true)
     public static class DescriptorImpl extends BuildWrapperDescriptor {
-        private List<Repository> releaseRepositories;
         private AbstractProject<?, ?> item;
 
         public DescriptorImpl() {
@@ -455,7 +454,7 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
                         artifactoryServer, item);
 
                 Collections.sort(releaseRepositoryKeysFirst);
-                releaseRepositories = RepositoriesUtils.createRepositoriesList(releaseRepositoryKeysFirst);
+                List<Repository> releaseRepositories = RepositoriesUtils.createRepositoriesList(releaseRepositoryKeysFirst);
                 response.setRepositories(releaseRepositories);
                 response.setSuccess(true);
 
