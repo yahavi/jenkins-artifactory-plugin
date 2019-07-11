@@ -97,7 +97,6 @@
                         </f:dropdownList>
                     </table>
                 </f:block>
-
                 <r:credentials configurationFieldName="resolverCredentialsConfig"
                                configurationObject="${instance.resolverCredentialsConfig}"
                                blockTitle="Override default download credentials"
@@ -189,10 +188,10 @@
                             </j:forEach>
                         </f:dropdownList>
                     </table>
-                    <r:credentials configurationFieldName="deployerCredentialsConfig"
-                                   configurationObject="${instance.deployerCredentialsConfig}"
-                                   blockTitle="Override default deployer credentials"
-                                   elementId="overridingDeployerCredentials-generic"/>
+                    <!--                    <r:credentials configurationFieldName="deployerCredentialsConfig"-->
+                    <!--                                   configurationObject="${instance.deployerCredentialsConfig}"-->
+                    <!--                                   blockTitle="Override default deployer credentials"-->
+                    <!--                                   elementId="overridingDeployerCredentials-generic"/>-->
                 </f:block>
 
                 <f:block>
@@ -234,10 +233,10 @@
                     </table>
                 </f:block>
 
-                <r:credentials configurationFieldName="resolverCredentialsConfig"
-                               configurationObject="${instance.resolverCredentialsConfig}"
-                               blockTitle="Override default download credentials"
-                               elementId="overridingResolverCredentials-generic"/>
+                <!--                <r:credentials configurationFieldName="resolverCredentialsConfig"-->
+                <!--                               configurationObject="${instance.resolverCredentialsConfig}"-->
+                <!--                               blockTitle="Override default download credentials"-->
+                <!--                               elementId="overridingResolverCredentials-generic"/>-->
 
                 <f:block>
                     <table style="width:100%" id="resolvePatternArea">
