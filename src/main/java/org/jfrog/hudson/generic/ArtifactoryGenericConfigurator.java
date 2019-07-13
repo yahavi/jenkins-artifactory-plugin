@@ -51,8 +51,8 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
 
     private final ServerDetails deployerDetails;
     private final ServerDetails resolverDetails;
-    private final CredentialsConfig deployerCredentialsConfig;
-    private final CredentialsConfig resolverCredentialsConfig;
+    private CredentialsConfig deployerCredentialsConfig;
+    private CredentialsConfig resolverCredentialsConfig;
     private final Boolean useSpecs;
     private final SpecConfiguration uploadSpec;
     private final SpecConfiguration downloadSpec;
@@ -96,7 +96,7 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
 
     @DataBoundConstructor
     public ArtifactoryGenericConfigurator(ServerDetails details, ServerDetails deployerDetails, ServerDetails resolverDetails,
-                                          CredentialsConfig deployerCredentialsConfig, CredentialsConfig resolverCredentialsConfig,
+                                          CredentialsConfig[] deployerCredentialsConfig, CredentialsConfig[] resolverCredentialsConfig,
                                           String deployPattern, String resolvePattern, String matrixParams, String deploymentProperties,
                                           boolean useSpecs, SpecConfiguration uploadSpec, SpecConfiguration downloadSpec,
                                           boolean deployBuildInfo,
@@ -110,8 +110,8 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
                                           boolean overrideBuildName) {
         this.deployerDetails = deployerDetails;
         this.resolverDetails = resolverDetails;
-        this.deployerCredentialsConfig = deployerCredentialsConfig;
-        this.resolverCredentialsConfig = resolverCredentialsConfig;
+        this.deployerCredentialsConfig = useSpecs || deployerCredentialsConfig.length == 1 ? deployerCredentialsConfig[0] : deployerCredentialsConfig[1];
+        this.resolverCredentialsConfig = useSpecs || resolverCredentialsConfig.length == 1 ? resolverCredentialsConfig[0] : resolverCredentialsConfig[1];
         this.deployPattern = deployPattern;
         this.resolvePattern = resolvePattern;
         this.useSpecs = useSpecs;
@@ -427,7 +427,8 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
             return item.getClass().isAssignableFrom(FreeStyleProject.class) ||
                     item.getClass().isAssignableFrom(MatrixProject.class) ||
                     (Jenkins.getInstance().getPlugin(PluginsUtils.MULTIJOB_PLUGIN_ID) != null &&
-                            item.getClass().isAssignableFrom(MultiJobProject.class));
+                            item.getClass().isAssignableFrom(MultiJobProject.class)) ||
+                    "PromotionProcess".equals(item.getClass().getSimpleName());
         }
 
         /**

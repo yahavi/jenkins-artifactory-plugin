@@ -2,9 +2,9 @@
          xmlns:r="/lib/jfrog" xmlns:st="jelly:stapler">
 
     <f:section title="${%Artifactory Configuration}">
-
+        <j:set var="useSpecs" value="${h.defaultToTrue(instance.useSpecs)}"/>
         <f:radioBlock name="useSpecs" title="Download and upload by Specs" value="true" inline="true"
-                      checked="${h.defaultToTrue(instance.useSpecs)}">
+                      checked="${useSpecs}">
             <f:nested>
                 <f:block>
                     <lable style="margin: 10px 0px 5px -10px; line-height: 3; font-size: 1.3em; padding: 10px 15px;
@@ -140,10 +140,8 @@
             </f:nested>
         </f:radioBlock>
 
-
         <f:radioBlock name="useSpecs" title="Download and upload by Legacy patterns (deprecated)" inline="true"
-                      value="false"
-                      checked="${instance.useSpecs==false}">
+                      value="false" checked="${!useSpecs}">
             <f:nested>
                 <f:block>
                     <lable style="margin: 10px 0px 5px -10px; line-height: 3; font-size: 1.3em; padding: 10px 15px;
@@ -188,10 +186,10 @@
                             </j:forEach>
                         </f:dropdownList>
                     </table>
-                    <!--                    <r:credentials configurationFieldName="deployerCredentialsConfig"-->
-                    <!--                                   configurationObject="${instance.deployerCredentialsConfig}"-->
-                    <!--                                   blockTitle="Override default deployer credentials"-->
-                    <!--                                   elementId="overridingDeployerCredentials-generic"/>-->
+                    <r:credentials configurationFieldName="deployerCredentialsConfig"
+                                   configurationObject="${instance.deployerCredentialsConfig}"
+                                   blockTitle="Override default deployer credentials"
+                                   elementId="overridingDeployerCredentials-generic"/>
                 </f:block>
 
                 <f:block>
