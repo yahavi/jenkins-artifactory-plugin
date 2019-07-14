@@ -424,11 +424,11 @@ public class ArtifactoryGenericConfigurator extends BuildWrapper implements Depl
         @Override
         public boolean isApplicable(AbstractProject<?, ?> item) {
             this.item = item;
-            return item.getClass().isAssignableFrom(FreeStyleProject.class) ||
-                    item.getClass().isAssignableFrom(MatrixProject.class) ||
+            Class<?> itemClass = item.getClass();
+            return itemClass.isAssignableFrom(FreeStyleProject.class) || itemClass.isAssignableFrom(MatrixProject.class) ||
                     (Jenkins.getInstance().getPlugin(PluginsUtils.MULTIJOB_PLUGIN_ID) != null &&
-                            item.getClass().isAssignableFrom(MultiJobProject.class)) ||
-                    "PromotionProcess".equals(item.getClass().getSimpleName());
+                            itemClass.isAssignableFrom(MultiJobProject.class)) ||
+                    PluginsUtils.PROMOTION_BUILD_PLUGIN_CLASS.equals(itemClass.getSimpleName());
         }
 
         /**

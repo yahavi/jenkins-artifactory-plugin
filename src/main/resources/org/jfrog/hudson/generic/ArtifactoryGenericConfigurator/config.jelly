@@ -3,6 +3,7 @@
 
     <f:section title="${%Artifactory Configuration}">
         <j:set var="useSpecs" value="${h.defaultToTrue(instance.useSpecs)}"/>
+        <j:set var="uniqueId" value="${h.generateId()}"/>
         <f:radioBlock name="useSpecs" title="Download and upload by Specs" value="true" inline="true"
                       checked="${useSpecs}">
             <f:nested>
@@ -34,7 +35,7 @@
                     <r:credentials configurationFieldName="deployerCredentialsConfig"
                                    configurationObject="${instance.deployerCredentialsConfig}"
                                    blockTitle="Override default deployer credentials"
-                                   elementId="overridingDeployerCredentials-generic"/>
+                                   elementId="overridingDeployerCredentials-generic-${uniqueId}"/>
                 </f:block>
 
                 <f:block>
@@ -100,7 +101,7 @@
                 <r:credentials configurationFieldName="resolverCredentialsConfig"
                                configurationObject="${instance.resolverCredentialsConfig}"
                                blockTitle="Override default download credentials"
-                               elementId="overridingResolverCredentials-generic"/>
+                               elementId="overridingResolverCredentials-generic-${uniqueId}"/>
 
                 <f:block>
                     <table style="width:100%" id="downloadSpecArea">
@@ -179,7 +180,7 @@
                                                  bind="genericDeployBind"
                                                  jsFunction="artifactoryGenericConfigurator"
                                                  repoUrl="artifactoryUrlDeploy${s.url}"
-                                                 credentialsDescriber="overridingDeployerCredentials-generic"/>
+                                                 credentialsDescriber="overridingDeployerCredentials-generic-legacy-${uniqueId}"/>
 
                                     </f:nested>
                                 </f:dropdownListBlock>
@@ -189,7 +190,7 @@
                     <r:credentials configurationFieldName="deployerCredentialsConfig"
                                    configurationObject="${instance.deployerCredentialsConfig}"
                                    blockTitle="Override default deployer credentials"
-                                   elementId="overridingDeployerCredentials-generic"/>
+                                   elementId="overridingDeployerCredentials-generic-legacy-${uniqueId}"/>
                 </f:block>
 
                 <f:block>
@@ -231,10 +232,10 @@
                     </table>
                 </f:block>
 
-                <!--                <r:credentials configurationFieldName="resolverCredentialsConfig"-->
-                <!--                               configurationObject="${instance.resolverCredentialsConfig}"-->
-                <!--                               blockTitle="Override default download credentials"-->
-                <!--                               elementId="overridingResolverCredentials-generic"/>-->
+                <r:credentials configurationFieldName="resolverCredentialsConfig"
+                               configurationObject="${instance.resolverCredentialsConfig}"
+                               blockTitle="Override default download credentials"
+                               elementId="overridingResolverCredentials-generic-legacy-${uniqueId}"/>
 
                 <f:block>
                     <table style="width:100%" id="resolvePatternArea">

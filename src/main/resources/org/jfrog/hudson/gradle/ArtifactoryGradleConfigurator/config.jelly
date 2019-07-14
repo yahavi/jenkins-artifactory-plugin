@@ -67,8 +67,7 @@
 
             <r:credentials configurationFieldName="deployerCredentialsConfig"
                            configurationObject="${instance.deployerCredentialsConfig}"
-                           blockTitle="Override default deployer credentials"
-                           elementId="overridingDeployerCredentials-gradle"/>
+                           blockTitle="Override default deployer credentials"/>
 
         </f:section>
         <f:section title="Resolution Details">
