@@ -5,9 +5,7 @@ resources:
     type: GitRepo
     configuration:
       path: yahavi/jenkins-artifactory-plugin
-      gitProvider: yahavi_github
-      buildOn:
-        tagCreate: true
+      gitProvider: yahav_github
 
 pipelines:
   - name: release_jenkins_plugin
