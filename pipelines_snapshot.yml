@@ -32,6 +32,7 @@ pipelines:
             - name: jenkinsSnapshotGit
           integrations:
             - name: jfrog
+            - name: ojo
         execution:
           onStart:
             - *UPDATE_COMMIT_STATUS
@@ -49,9 +50,10 @@ pipelines:
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
 
             # Run mvn
+            - ./jfrog rt c ojo --url $int_ojo_rt_url --access-token=$int_ojo_rt_token
             - ./jfrog rt c jfrog --url $int_jfrog_rt_url --user $int_jfrog_rt_user --password $int_jfrog_rt_password
             - ./jfrog rt mvnc
-              --server-id-resolve jfrog --repo-resolve-releases libs-release --repo-resolve-snapshots libs-snapshot
+              --server-id-resolve ojo --repo-resolve-releases libs-release --repo-resolve-snapshots libs-snapshot
               --server-id-deploy jfrog --repo-deploy-releases libs-release-local --repo-deploy-snapshots libs-snapshot-local
             - ./jfrog rt mvn clean install -U javadoc:jar source:jar
             - ./jfrog rt bp
