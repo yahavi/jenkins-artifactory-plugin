@@ -19,7 +19,7 @@ pipelines:
       environmentVariables:
         readOnly:
           CI: "true"
-          JFROG_CLI_BUILD_NAME: "EcoSystem :: artifactory-jenkins-plugin"
+          JFROG_CLI_BUILD_NAME: "artifactory-jenkins-plugin"
           JFROG_CLI_BUILD_NUMBER: $run_number
 
     steps:

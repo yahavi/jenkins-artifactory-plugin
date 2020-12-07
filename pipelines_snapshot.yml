@@ -21,7 +21,7 @@ pipelines:
       environmentVariables:
         readOnly:
           CI: "true"
-          JFROG_CLI_BUILD_NAME: "EcoSystem :: jenkins-plugin-dev"
+          JFROG_CLI_BUILD_NAME: "jenkins-plugin-dev"
           JFROG_CLI_BUILD_NUMBER: $run_number
 
     steps:
