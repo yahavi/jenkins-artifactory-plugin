@@ -1,17 +1,16 @@
-updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsReleaseGit --context "$step_name"
+updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsSnapshotGit --context "$step_name"
 
 resources:
-  - name: jenkinsReleaseGit
+  - name: jenkinsSnapshotGit
     type: GitRepo
     configuration:
       path: yahavi/jenkins-artifactory-plugin
       gitProvider: yahav_github
       buildOn:
-        commit: false
         tagCreate: true
 
 pipelines:
-  - name: release_jenkins_plugin
+  - name: create_jenkins_snapshot
     configuration:
       runtime:
         type: image
@@ -22,22 +21,23 @@ pipelines:
       environmentVariables:
         readOnly:
           CI: "true"
-          JFROG_CLI_BUILD_NAME: "artifactory-jenkins-plugin"
+          JFROG_CLI_BUILD_NAME: "jenkins-plugin-dev"
           JFROG_CLI_BUILD_NUMBER: $run_number
 
     steps:
-      - name: build_release
+      - name: build_snapshot
         type: Bash
         configuration:
           inputResources:
-            - name: jenkinsReleaseGit
+            - name: jenkinsSnapshotGit
           integrations:
             - name: jfrog
+            - name: ojo
         execution:
           onStart:
             - *UPDATE_COMMIT_STATUS
           onExecute:
-            - cd $res_jenkinsReleaseGit_resourcePath
+            - cd $res_jenkinsSnapshotGit_resourcePath
             # Restore .m2 cache
             - restore_cache_files m2_home ${HOME}/.m2
 
@@ -51,14 +51,16 @@ pipelines:
 
             # Run mvn
             - ./jfrog rt c jfrog --url $int_jfrog_rt_url --user $int_jfrog_rt_user --password $int_jfrog_rt_password
+            - ./jfrog rt c ojo --url $int_ojo_rt_url --access-token=$int_ojo_rt_token
             - ./jfrog rt mvnc
-              --server-id-resolve jfrog --repo-resolve-releases jfrog-dependencies --repo-resolve-snapshots jfrog-dependencies
-              --server-id-deploy jfrog --repo-deploy-releases releases --repo-deploy-snapshots snapshots
-            - ./jfrog rt mvn clean install
+              --server-id-resolve ojo --repo-resolve-releases libs-release --repo-resolve-snapshots libs-snapshot
+              --server-id-deploy jfrog --repo-deploy-releases libs-release-local --repo-deploy-snapshots libs-snapshot-local
+            - ./jfrog rt mvn clean install -U javadoc:jar source:jar
+            - ./jfrog rt bag
             - ./jfrog rt bp
           onComplete:
             # Show tests in the *Tests* tab
-            - save_tests $res_jenkinsReleaseGit_resourcePath/target/surefire-reports/
+            - save_tests $res_jenkinsSnapshotGit_resourcePath/target/surefire-reports/
 
             # Save .m2 cache
             - add_cache_files ${HOME}/.m2 m2_home
