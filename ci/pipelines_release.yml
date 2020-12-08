@@ -36,6 +36,7 @@ pipelines:
         execution:
           onStart:
             - *UPDATE_COMMIT_STATUS
+            - apt update && apt install gettext-base
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
 
