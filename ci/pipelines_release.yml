@@ -17,8 +17,7 @@ pipelines:
         type: image
         image:
           custom:
-            name: releases-docker.jfrog.io/jfrog-ecosystem-integration-env
-            tag: 1.0.0
+            name: maven:3.6.3-adoptopenjdk-8
       environmentVariables:
         readOnly:
           CI: "true"
@@ -38,11 +37,6 @@ pipelines:
             - *UPDATE_COMMIT_STATUS
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
-
-            # Install Java 8
-            - echo sdkman_auto_answer=true > $HOME/.sdkman/etc/config
-            - echo sdkman_auto_selfupdate=true >> $HOME/.sdkman/etc/config
-            - source "/root/.sdkman/bin/sdkman-init.sh" && sdk update && sdk install java `sdk list java | grep -E "8.*hs-adpt" | head -1 | awk '{print $NF}'` && java -version
 
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
