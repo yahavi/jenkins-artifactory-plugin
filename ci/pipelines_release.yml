@@ -6,6 +6,8 @@ resources:
     configuration:
       path: yahavi/jenkins-artifactory-plugin
       gitProvider: yahav_github
+      branches:
+        include: master
       buildOn:
         commit: false
 
@@ -43,6 +45,7 @@ pipelines:
             - *UPDATE_COMMIT_STATUS
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
+            - git checkout master
 
             # Make sure versions provided
             - echo "Checking variables"
