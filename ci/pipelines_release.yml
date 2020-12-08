@@ -63,7 +63,8 @@ pipelines:
             - ./jfrog rt mvn versions:set -DnewVersion="${NEXT_VERSION}" -B
             - git commit -am "[artifactory-release] Release version ${NEXT_VERSION}"
             - git tag artifactory-${NEXT_VERSION}
-            - git push --tags
+            - git push https://${int_jenkinsReleaseGit_token}@github.com/yahavi/jenkins-artifactory-plugin.git
+            - git push https://${int_jenkinsReleaseGit_token}@github.com/yahavi/jenkins-artifactory-plugin.git --tags
 
             # Run mvn install
             - ./jfrog rt mvn clean install -B
