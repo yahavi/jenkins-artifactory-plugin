@@ -50,7 +50,7 @@ pipelines:
 
             # Make sure tag does not exist
             - echo "Make sure tag does not exist"
-            - ! git rev-parse "artifactory-$NEXT_VERSION" >/dev/null 2>&1 | test
+            - ! git rev-parse "artifactory-$NEXT_VERSION" | test
 
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
