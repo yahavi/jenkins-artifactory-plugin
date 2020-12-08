@@ -30,7 +30,8 @@ pipelines:
         type: Bash
         configuration:
           environmentVariables:
-            JENKINS_ARTIFACTORY_PLUGIN_VERSION: 0.0.0
+            NEXT_VERSION: 0.0.0
+            NEXT_DEVELOPMENT_VERSION: 0.0.x-SNAPSHOT
           inputResources:
             - name: jenkinsReleaseGit
           integrations:
@@ -42,26 +43,40 @@ pipelines:
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
 
-            # Make sure tag is provided
-            - if [[ -z "${JENKINS_ARTIFACTORY_PLUGIN_TAG}" ] | ["$JENKINS_ARTIFACTORY_PLUGIN_TAG" = "0.0.0"]; then
-              echo "JENKINS_ARTIFACTORY_PLUGIN_TAG env var is mandatory; exit 1
+            # Make sure versions are provided
+            - if [[ -z "${NEXT_VERSION}" ] | ["${NEXT_VERSION}" = "0.0.0"]; then
+              echo "${NEXT_VERSION} env var is mandatory; exit 1
+
+            - if [[ -z "${NEXT_DEVELOPMENT_VERSION}" ] | ["NEXT_DEVELOPMENT_VERSION" = "0.0.x-SNAPSHOT"]; then
+              echo "NEXT_DEVELOPMENT_VERSION env var is mandatory; exit 1
 
             # Make sure tag is not exist
-            - if ! rev-parse artifactory-$JENKINS_ARTIFACTORY_PLUGIN_TAG >/dev/null 2>&1; then
-              echo "Tag $JENKINS_ARTIFACTORY_PLUGIN_TAG is already exist"
+            - if ! rev-parse artifactory-${NEXT_VERSION} >/dev/null 2>&1; then
+              echo "Tag ${NEXT_VERSION} is already exist"
 
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
 
-            # Run mvn
+            # Configure JFrog CLI
             - ./jfrog rt c jfrog --url $int_jfrog_rt_url --user $int_jfrog_rt_user --password $int_jfrog_rt_password
             - ./jfrog rt c ojo --url $int_ojo_rt_url --access-token=$int_ojo_rt_token
             - ./jfrog rt mvnc
               --server-id-resolve ojo --repo-resolve-releases jfrog-dependencies --repo-resolve-snapshots jfrog-dependencies
               --server-id-deploy jfrog --repo-deploy-releases releases --repo-deploy-snapshots snapshots
-            - ./jfrog rt mvn versions:set clean install -B
-            - ./jfrog rt bag
+
+            # Update version
+            - ./jfrog rt mvn versions:set -DnewVersion=${NEXT_VERSION} -B
+            - git commit -am "[artifactory-release] Release version ${NEXT_VERSION}"
+            - git tag artifactory-${NEXT_VERSION}
+            - git push --tags
+
+            # Run mvn install
+            - ./jfrog rt mvn clean install -B
             - ./jfrog rt bp
+
+            # Update next development version
+            - ./jfrog rt mvn versions:set -DnewVersion=${NEXT_DEVELOPMENT_VERSION}
+            - git commit -am "[artifactory-release] Next development version"
           onComplete:
             # Show tests in the *Tests* tab
             - save_tests $res_jenkinsReleaseGit_resourcePath/target/surefire-reports/
