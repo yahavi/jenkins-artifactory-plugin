@@ -46,7 +46,7 @@ pipelines:
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
             - git checkout master
-            - git remote -v
+            - env
 
             # Make sure versions provided
             - echo "Checking variables"
