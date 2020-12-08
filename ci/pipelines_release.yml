@@ -59,7 +59,7 @@ pipelines:
               --server-id-deploy jfrog --repo-deploy-releases releases --repo-deploy-snapshots snapshots
 
             # Update version
-            - ./jfrog rt mvn versions:set -DnewVersion=${NEXT_VERSION} -B
+            - ./jfrog rt mvn versions:set -DnewVersion="${NEXT_VERSION}" -B
             - git commit -am "[artifactory-release] Release version ${NEXT_VERSION}"
             - git tag artifactory-${NEXT_VERSION}
             - git push --tags
