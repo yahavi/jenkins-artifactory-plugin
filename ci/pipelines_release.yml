@@ -35,7 +35,7 @@ pipelines:
             - name: jfrog
         execution:
           onStart:
-            - apt update && apt install gettext-base
+            - apt update && apt install -y gettext-base jq
             - *UPDATE_COMMIT_STATUS
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
