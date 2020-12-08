@@ -21,7 +21,7 @@ pipelines:
       environmentVariables:
         readOnly:
           CI: "true"
-          M2_HOME: "/usr/share/maven"
+          M2_HOME: $MAVEN_HOME
           JFROG_CLI_BUILD_NAME: "jenkins-plugin-dev"
           JFROG_CLI_BUILD_NUMBER: $run_number
 
