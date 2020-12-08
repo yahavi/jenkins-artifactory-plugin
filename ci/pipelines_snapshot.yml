@@ -16,7 +16,8 @@ pipelines:
         type: image
         image:
           custom:
-            name: maven:3.6.3-adoptopenjdk-8
+            name: maven
+            tag: 3.6.3-adoptopenjdk-8
       environmentVariables:
         readOnly:
           CI: "true"
