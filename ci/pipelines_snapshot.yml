@@ -52,7 +52,7 @@ pipelines:
             - ./jfrog rt mvnc
               --server-id-resolve ojo --repo-resolve-releases libs-release --repo-resolve-snapshots libs-snapshot
               --server-id-deploy jfrog --repo-deploy-releases libs-release-local --repo-deploy-snapshots libs-snapshot-local
-            - ./jfrog rt mvn clean install -U javadoc:jar source:jar
+            - ./jfrog rt mvn clean install -UB javadoc:jar source:jar
             - ./jfrog rt bag
             - ./jfrog rt bp
           onComplete:
