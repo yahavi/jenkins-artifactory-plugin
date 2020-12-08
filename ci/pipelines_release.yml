@@ -48,10 +48,6 @@ pipelines:
             - test -n "$NEXT_VERSION" -a "$NEXT_VERSION" != "0.0.0"
             - test -n "NEXT_DEVELOPMENT_VERSION" -a "NEXT_DEVELOPMENT_VERSION" != "0.0.0"
 
-            # Make sure tag does not exist
-            - echo "Make sure tag does not exist"
-            - ! git rev-parse "artifactory-$NEXT_VERSION" | test
-
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
 
