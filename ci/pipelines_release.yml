@@ -44,8 +44,8 @@ pipelines:
             - cd $res_jenkinsReleaseGit_resourcePath
 
             # Make sure versions provided
-            - [ -n ${NEXT_VERSION} ] && [ ${NEXT_VERSION} != "0.0.0" ]
-            - [ -n ${NEXT_DEVELOPMENT_VERSION} ] && [ ${NEXT_DEVELOPMENT_VERSION} != "0.0.0" ]
+            - [ -n '${NEXT_VERSION}' ] && [ '${NEXT_VERSION}' != "0.0.0" ]
+            - [ -n '${NEXT_DEVELOPMENT_VERSION}' ] && [ '${NEXT_DEVELOPMENT_VERSION}' != "0.0.0" ]
 
             # Make sure tag does not exist
             - ! git rev-parse artifactory-1.0.0 >/dev/null 2>&1
