@@ -8,6 +8,7 @@ resources:
       gitProvider: yahav_github
       buildOn:
         commit: false
+        tagCreate: true
 
 pipelines:
   - name: release_jenkins_plugin
