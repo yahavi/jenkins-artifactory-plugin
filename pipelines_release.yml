@@ -6,8 +6,8 @@ resources:
     configuration:
       path: yahavi/jenkins-artifactory-plugin
       gitProvider: yahav_github
-    buildOn:
-      commit: false
+      buildOn:
+        commit: false
 
 pipelines:
   - name: release_jenkins_plugin
