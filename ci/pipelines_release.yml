@@ -8,7 +8,6 @@ resources:
       gitProvider: yahav_github
       buildOn:
         commit: false
-        tagCreate: true
 
 pipelines:
   - name: release_jenkins_plugin
@@ -30,6 +29,8 @@ pipelines:
       - name: build_release
         type: Bash
         configuration:
+          environmentVariables:
+            JENKINS_ARTIFACTORY_PLUGIN_VERSION: 0.0.0
           inputResources:
             - name: jenkinsReleaseGit
           integrations:
@@ -41,6 +42,14 @@ pipelines:
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
 
+            # Make sure tag is provided
+            - if [[ -z "${JENKINS_ARTIFACTORY_PLUGIN_TAG}" ] | ["$JENKINS_ARTIFACTORY_PLUGIN_TAG" = "0.0.0"]; then
+              echo "JENKINS_ARTIFACTORY_PLUGIN_TAG env var is mandatory; exit 1
+
+            # Make sure tag is not exist
+            - if ! rev-parse artifactory-$JENKINS_ARTIFACTORY_PLUGIN_TAG >/dev/null 2>&1; then
+              echo "Tag $JENKINS_ARTIFACTORY_PLUGIN_TAG is already exist"
+
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
 
@@ -50,7 +59,7 @@ pipelines:
             - ./jfrog rt mvnc
               --server-id-resolve ojo --repo-resolve-releases jfrog-dependencies --repo-resolve-snapshots jfrog-dependencies
               --server-id-deploy jfrog --repo-deploy-releases releases --repo-deploy-snapshots snapshots
-            - ./jfrog rt mvn clean install -B
+            - ./jfrog rt mvn versions:set clean install -B
             - ./jfrog rt bag
             - ./jfrog rt bp
           onComplete:
