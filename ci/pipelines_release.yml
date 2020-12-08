@@ -43,16 +43,18 @@ pipelines:
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
 
-            # Make sure versions are provided
-            - if [[ -z "${NEXT_VERSION}" ] | ["${NEXT_VERSION}" = "0.0.0"]; then
-              echo "${NEXT_VERSION} env var is mandatory; exit 1
+            # Make sure versions provided
+            - if [ -z "${NEXT_VERSION}" ] || [ "${NEXT_VERSION}" = "0.0.0" ]; then
+              echo "${NEXT_VERSION} env var is mandatory" && exit 1
+              fi
+            - if [ -z "${NEXT_DEVELOPMENT_VERSION}" ] || [ "${NEXT_DEVELOPMENT_VERSION}" = "0.0.x-SNAPSHOT" ]; then
+              echo "${NEXT_DEVELOPMENT_VERSION} env var is mandatory" && exit 1
+              fi
 
-            - if [[ -z "${NEXT_DEVELOPMENT_VERSION}" ] | ["NEXT_DEVELOPMENT_VERSION" = "0.0.x-SNAPSHOT"]; then
-              echo "NEXT_DEVELOPMENT_VERSION env var is mandatory; exit 1
-
-            # Make sure tag is not exist
-            - if ! rev-parse artifactory-${NEXT_VERSION} >/dev/null 2>&1; then
+            # Make sure tag does not exist
+            - if git rev-parse artifactory-${NEXT_VERSION} >/dev/null 2>&1; then
               echo "Tag ${NEXT_VERSION} is already exist"
+              fi
 
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
