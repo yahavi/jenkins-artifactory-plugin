@@ -22,6 +22,7 @@ pipelines:
       environmentVariables:
         readOnly:
           CI: "true"
+          M2_HOME: "/usr/share/maven"
           JFROG_CLI_BUILD_NAME: "artifactory-jenkins-plugin"
           JFROG_CLI_BUILD_NUMBER: $run_number
 
