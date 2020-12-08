@@ -36,6 +36,7 @@ pipelines:
             - name: jenkinsReleaseGit
           integrations:
             - name: jfrog
+            - name: ojo
         execution:
           onStart:
             - apt update && apt install -y gettext-base jq
