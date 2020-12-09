@@ -6,8 +6,6 @@ resources:
       gitProvider: yahav_github
       buildOn:
         pullRequestCreate: true
-      cancelPendingRunsOn:
-        pullRequestUpdate: true
 
   - name: jenkinsReleaseGit
     type: GitRepo
