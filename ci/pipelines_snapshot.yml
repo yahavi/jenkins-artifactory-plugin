@@ -8,7 +8,7 @@ resources:
       gitProvider: yahav_github
 
 pipelines:
-  - name: create_jenkins_snapshot
+  - name: build_jenkins_snapshot
     configuration:
       runtime:
         type: image
