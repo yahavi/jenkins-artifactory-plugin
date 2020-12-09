@@ -1,7 +1,7 @@
 pipelines:
   - name: build_jenkins_snapshot
     configuration:
-      << :*RUNTIME
+      <<: *RUNTIME
       environmentVariables:
         readOnly:
           CI: "true"

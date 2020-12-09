@@ -1,7 +1,7 @@
 pipelines:
   - name: build_jenkins
     configuration:
-      << :*RUNTIME
+      <<: *RUNTIME
       environmentVariables:
         readOnly:
           NEXT_VERSION: 0.0.0
