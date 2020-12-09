@@ -48,8 +48,9 @@ pipelines:
 
           onComplete:
             - export BUILD_INFO_URL=$int_jfrog_rt_url/webapp/#/builds/$JFROG_CLI_BUILD_NAME/$JFROG_CLI_BUILD_NUMBER
-            - update_commit_status jenkinsSnapshotGit --context "$step_name" --message "$int_jfrog_rt_url/webapp/#/builds/$JFROG_CLI_BUILD_NAME/$JFROG_CLI_BUILD_NUMBER"
+            - update_commit_status jenkinsSnapshotGit --context "$step_name" --message "$BUILD_INFO_URL"
             - add_pipeline_variables BuildInfo=$BUILD_INFO_URL
+            - export_pipeline_variables
 
             # Show tests in the *Tests* tab
             - save_tests $res_jenkinsSnapshotGit_resourcePath/target/surefire-reports/
