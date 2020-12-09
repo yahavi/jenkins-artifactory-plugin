@@ -1,7 +1,14 @@
+updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsReleaseGit --context "$step_name"
+
 pipelines:
   - name: build_jenkins
     configuration:
-      <<: *RUNTIME
+      runtime:
+        type: image
+        image:
+          custom:
+            name: maven
+            tag: 3.6.3-adoptopenjdk-8
       environmentVariables:
         readOnly:
           NEXT_VERSION: 0.0.0

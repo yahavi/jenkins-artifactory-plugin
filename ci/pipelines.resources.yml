@@ -16,12 +16,3 @@ resources:
       buildOn:
         commit: false
 
-runtime: $RUNTIME
-  runtime:
-    type: image
-    image:
-      custom:
-        name: maven
-        tag: 3.6.3-adoptopenjdk-8
-
-updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsGit --context "$step_name"

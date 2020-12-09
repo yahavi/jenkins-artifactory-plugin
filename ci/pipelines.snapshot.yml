@@ -1,7 +1,14 @@
+updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsSnapshotGit --context "$step_name"
+
 pipelines:
   - name: build_jenkins_snapshot
     configuration:
-      <<: *RUNTIME
+      runtime:
+        type: image
+        image:
+          custom:
+            name: maven
+            tag: 3.6.3-adoptopenjdk-8
       environmentVariables:
         readOnly:
           CI: "true"
@@ -14,7 +21,7 @@ pipelines:
         type: Bash
         configuration:
           inputResources:
-            - name: jenkinsGit
+            - name: jenkinsSnapshotGit
           integrations:
             - name: jfrog
             - name: ojo
@@ -24,7 +31,7 @@ pipelines:
             - *UPDATE_COMMIT_STATUS
             - restore_cache_files m2_home ${HOME}/.m2
           onExecute:
-            - cd $res_jenkinsGit_resourcePath
+            - cd $res_jenkinsSnapshotGit_resourcePath
 
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
@@ -45,7 +52,7 @@ pipelines:
             - *UPDATE_COMMIT_STATUS
 
             # Show tests in the *Tests* tab
-            - save_tests $res_jenkinsGit_resourcePath/target/surefire-reports/
+            - save_tests $res_jenkinsSnapshotGit_resourcePath/target/surefire-reports/
 
             # Save .m2 cache
             - add_cache_files ${HOME}/.m2 m2_home
