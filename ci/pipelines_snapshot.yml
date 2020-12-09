@@ -28,7 +28,7 @@ pipelines:
           JFROG_CLI_BUILD_NUMBER: $run_number
 
     steps:
-      - name: build_snapshot
+      - name: Snapshot
         type: Bash
         configuration:
           inputResources:
