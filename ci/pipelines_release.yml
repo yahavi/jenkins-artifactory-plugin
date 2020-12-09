@@ -6,10 +6,9 @@ resources:
     configuration:
       path: yahavi/jenkins-artifactory-plugin
       gitProvider: yahav_github
-      branches:
-        include: master
       buildOn:
         commit: false
+        tagCreate: true
 
 pipelines:
   - name: release_jenkins_plugin
@@ -31,9 +30,6 @@ pipelines:
       - name: build_release
         type: Bash
         configuration:
-          environmentVariables:
-            NEXT_VERSION: 0.0.0
-            NEXT_DEVELOPMENT_VERSION: 0.0.x-SNAPSHOT
           inputResources:
             - name: jenkinsReleaseGit
           integrations:
@@ -45,13 +41,6 @@ pipelines:
             - *UPDATE_COMMIT_STATUS
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
-            - git checkout master
-            - env
-
-            # Make sure versions provided
-            - echo "Checking variables"
-            - test -n "$NEXT_VERSION" -a "$NEXT_VERSION" != "0.0.0"
-            - test -n "NEXT_DEVELOPMENT_VERSION" -a "NEXT_DEVELOPMENT_VERSION" != "0.0.0"
 
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
@@ -63,21 +52,9 @@ pipelines:
               --server-id-resolve ojo --repo-resolve-releases jfrog-dependencies --repo-resolve-snapshots jfrog-dependencies
               --server-id-deploy jfrog --repo-deploy-releases releases --repo-deploy-snapshots snapshots
 
-            # Update version
-            - ./jfrog rt mvn versions:set -DnewVersion="${NEXT_VERSION}" -B
-            - git commit -am "[artifactory-release] Release version ${NEXT_VERSION}"
-            - git tag artifactory-${NEXT_VERSION}
-            - echo $res_jenkinsReleaseGit_gitRepoRepositoryHttpsUrl
-            - git push $res_jenkinsReleaseGit_gitRepoRepositoryHttpsUrl
-            - git push --tags $res_jenkinsReleaseGit_gitRepoRepositoryHttpsUrl
-
-            # Run mvn install
+            # Run install and publish
             - ./jfrog rt mvn clean install -B
             - ./jfrog rt bp
-
-            # Update next development version
-            - ./jfrog rt mvn versions:set -DnewVersion=${NEXT_DEVELOPMENT_VERSION}
-            - git commit -am "[artifactory-release] Next development version"
           onComplete:
             # Show tests in the *Tests* tab
             - save_tests $res_jenkinsReleaseGit_resourcePath/target/surefire-reports/
