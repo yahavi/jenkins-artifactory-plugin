@@ -63,7 +63,7 @@ pipelines:
 
             # Update version
             - ./jfrog rt mvn versions:set -DnewVersion="${NEXT_VERSION}" -B
-            - git commit -am "[artifactory-release] Release version ${NEXT_VERSION}" --allow-empty
+            - git commit -am "[skipRun][artifactory-release] Release version ${NEXT_VERSION}" --allow-empty
             - git tag artifactory-${NEXT_VERSION}
             - git push https://$int_yahav_github_generic_token@github.com/yahavi/jenkins-artifactory-plugin.git
             - git push --tags https://$int_yahav_github_generic_token@github.com/yahavi/jenkins-artifactory-plugin.git
@@ -75,7 +75,7 @@ pipelines:
 
             # Update next development version
             - ./jfrog rt mvn versions:set -DnewVersion=$NEXT_DEVELOPMENT_VERSION -B
-            - git commit -am "[artifactory-release] Next development version"
+            - git commit -am "[skipRun][artifactory-release] Next development version"
             - git push https://$int_yahav_github_generic_token@github.com/yahavi/jenkins-artifactory-plugin.git
 
           onComplete:

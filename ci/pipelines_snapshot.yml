@@ -8,6 +8,8 @@ resources:
       gitProvider: yahav_github
       buildOn:
         releaseCreate: true
+      cancelPendingRunsOn:
+        pullRequestUpdate: true
 
 pipelines:
   - name: build_jenkins_snapshot
