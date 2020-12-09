@@ -1,0 +1,27 @@
+resources:
+  - name: jenkinsGit
+    type: GitRepo
+    configuration:
+      path: yahavi/jenkins-artifactory-plugin
+      gitProvider: yahav_github
+      buildOn:
+        releaseCreate: true
+      cancelPendingRunsOn:
+        pullRequestUpdate: true
+  - name: jenkinsReleaseGit
+    type: GitRepo
+    configuration:
+      path: yahavi/jenkins-artifactory-plugin
+      gitProvider: yahav_github
+      buildOn:
+        commit: false
+
+runtime: $RUNTIME
+  runtime:
+    type: image
+    image:
+      custom:
+        name: maven
+        tag: 3.6.3-adoptopenjdk-8
+
+updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsGit --context "$step_name"

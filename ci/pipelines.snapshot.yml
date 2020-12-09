@@ -1,25 +1,7 @@
-updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsSnapshotGit --context "$step_name"
-
-resources:
-  - name: jenkinsSnapshotGit
-    type: GitRepo
-    configuration:
-      path: yahavi/jenkins-artifactory-plugin
-      gitProvider: yahav_github
-      buildOn:
-        releaseCreate: true
-      cancelPendingRunsOn:
-        pullRequestUpdate: true
-
 pipelines:
   - name: build_jenkins_snapshot
     configuration:
-      runtime:
-        type: image
-        image:
-          custom:
-            name: maven
-            tag: 3.6.3-adoptopenjdk-8
+      << :*RUNTIME
       environmentVariables:
         readOnly:
           CI: "true"
@@ -32,7 +14,7 @@ pipelines:
         type: Bash
         configuration:
           inputResources:
-            - name: jenkinsSnapshotGit
+            - name: jenkinsGit
           integrations:
             - name: jfrog
             - name: ojo
@@ -42,7 +24,7 @@ pipelines:
             - *UPDATE_COMMIT_STATUS
             - restore_cache_files m2_home ${HOME}/.m2
           onExecute:
-            - cd $res_jenkinsSnapshotGit_resourcePath
+            - cd $res_jenkinsGit_resourcePath
 
             # Download JFrog CLI
             - curl -fL https://getcli.jfrog.io | sh && chmod +x jfrog
@@ -58,11 +40,12 @@ pipelines:
             - ./jfrog rt mvn clean install -U -B javadoc:jar source:jar
             - ./jfrog rt bag
             - ./jfrog rt bp
+
           onComplete:
             - *UPDATE_COMMIT_STATUS
 
             # Show tests in the *Tests* tab
-            - save_tests $res_jenkinsSnapshotGit_resourcePath/target/surefire-reports/
+            - save_tests $res_jenkinsGit_resourcePath/target/surefire-reports/
 
             # Save .m2 cache
             - add_cache_files ${HOME}/.m2 m2_home
