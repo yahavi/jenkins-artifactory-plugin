@@ -20,6 +20,8 @@ pipelines:
             tag: 3.6.3-adoptopenjdk-8
       environmentVariables:
         readOnly:
+          NEXT_VERSION: 0.0.0
+          NEXT_DEVELOPMENT_VERSION: 0.0.x-SNAPSHOT
           CI: "true"
           M2_HOME: $MAVEN_HOME
           JFROG_CLI_BUILD_NAME: "artifactory-jenkins-plugin"
@@ -29,9 +31,6 @@ pipelines:
       - name: build_release
         type: Bash
         configuration:
-          environmentVariables:
-            NEXT_VERSION: 0.0.0
-            NEXT_DEVELOPMENT_VERSION: 0.0.x-SNAPSHOT
           inputResources:
             - name: jenkinsReleaseGit
           integrations:
