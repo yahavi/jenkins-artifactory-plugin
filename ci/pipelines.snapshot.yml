@@ -1,3 +1,5 @@
+updateCommitStatus: &UPDATE_COMMIT_STATUS update_commit_status jenkinsSnapshotGit --context "$step_name"
+
 pipelines:
   - name: build_jenkins_snapshot
     configuration:
@@ -26,7 +28,7 @@ pipelines:
         execution:
           onStart:
             - apt update && apt install -y gettext-base jq
-            - update_commit_status jenkinsSnapshotGit --context "$step_name"
+            - *UPDATE_COMMIT_STATUS
             - restore_cache_files m2_home ${HOME}/.m2
           onExecute:
             - cd $res_jenkinsSnapshotGit_resourcePath
@@ -45,11 +47,12 @@ pipelines:
             - ./jfrog rt mvn clean install -U -B javadoc:jar source:jar
             - ./jfrog rt bag
             - ./jfrog rt bp
+            - if [ $res_jenkinsSnapshotGit_isPullRequest = "True" ]; then
+                update_commit_status jenkinsSnapshotGit --context "$int_jfrog_rt_url/webapp/#/builds/$JFROG_CLI_BUILD_NAME/$JFROG_CLI_BUILD_NUMBER" --message=""
+              fi
 
           onComplete:
-            - export BUILD_INFO_URL=$int_jfrog_rt_url/webapp/#/builds/$JFROG_CLI_BUILD_NAME/$JFROG_CLI_BUILD_NUMBER
-            - update_commit_status jenkinsSnapshotGit --context "$BUILD_INFO_URL"
-            - add_run_variables BuildInfo=$BUILD_INFO_URL
+            - *UPDATE_COMMIT_STATUS
 
             # Show tests in the *Tests* tab
             - save_tests $res_jenkinsSnapshotGit_resourcePath/target/surefire-reports/
