@@ -42,6 +42,7 @@ pipelines:
           onStart:
             - apt update && apt install -y gettext-base jq
             - *UPDATE_COMMIT_STATUS
+            - restore_cache_files m2_home ${HOME}/.m2
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
             - git checkout master
@@ -68,15 +69,21 @@ pipelines:
             - git push https://$int_yahav_github_generic_token@github.com/yahavi/jenkins-artifactory-plugin.git
             - git push --tags https://$int_yahav_github_generic_token@github.com/yahavi/jenkins-artifactory-plugin.git
 
-            # Run mvn install
-            - ./jfrog rt mvn clean install -B
+            # Run install and publish
+            - ./jfrog rt bc
+            - ./jfrog rt mvn clean install -U -B
             - ./jfrog rt bp
 
             # Update next development version
             - ./jfrog rt mvn versions:set -DnewVersion=${NEXT_DEVELOPMENT_VERSION}
             - git commit -am "[artifactory-release] Next development version"
+            - git push https://$int_yahav_github_generic_token@github.com/yahavi/jenkins-artifactory-plugin.git
+
           onComplete:
             # Show tests in the *Tests* tab
             - save_tests $res_jenkinsReleaseGit_resourcePath/target/surefire-reports/
 
             - *UPDATE_COMMIT_STATUS
+
+            # Save .m2 cache
+            - add_cache_files ${HOME}/.m2 m2_home
