@@ -48,7 +48,7 @@ pipelines:
 
           onComplete:
             - export BUILD_INFO_URL=$int_jfrog_rt_url/webapp/#/builds/$JFROG_CLI_BUILD_NAME/$JFROG_CLI_BUILD_NUMBER
-            - update_commit_status jenkinsSnapshotGit --context "$step_name" --message "[Build Info]($int_jfrog_rt_url/webapp/#/builds/$JFROG_CLI_BUILD_NAME/$JFROG_CLI_BUILD_NUMBER)"
+            - update_commit_status jenkinsSnapshotGit --context "$step_name" --message "$int_jfrog_rt_url/webapp/#/builds/$JFROG_CLI_BUILD_NAME/$JFROG_CLI_BUILD_NUMBER"
             - add_pipeline_variables BuildInfo=$BUILD_INFO_URL
 
             # Show tests in the *Tests* tab
