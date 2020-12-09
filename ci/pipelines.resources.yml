@@ -1,5 +1,5 @@
 resources:
-  - name: jenkinsGit
+  - name: jenkinsSnapshotGit
     type: GitRepo
     configuration:
       path: yahavi/jenkins-artifactory-plugin
