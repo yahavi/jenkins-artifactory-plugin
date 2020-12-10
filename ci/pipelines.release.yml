@@ -28,7 +28,7 @@ pipelines:
           integrations:
             - name: ojo
             - name: github_generic
-            - name: id_rsa
+            - name: jenkins_id_rsa
         execution:
           onStart:
             - *UPDATE_COMMIT_STATUS
