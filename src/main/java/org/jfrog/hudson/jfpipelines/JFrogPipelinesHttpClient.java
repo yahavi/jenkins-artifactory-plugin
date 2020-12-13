@@ -6,6 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -160,14 +161,14 @@ public class JFrogPipelinesHttpClient implements AutoCloseable {
         return version;
     }
 
-    public HttpResponse sendStatus(JobStatusPayload payload) throws IOException {
+    public CloseableHttpResponse sendStatus(JobStatusPayload payload) throws IOException {
         String text = createMapper().writeValueAsString(payload);
         log.debug("Sending status to JFrog Pipelines with payload: " + text);
         StringEntity body = new StringEntity(text, ContentType.APPLICATION_JSON);
         return executePostRequest(body);
     }
 
-    private HttpResponse executePostRequest(HttpEntity body) throws IOException {
+    private CloseableHttpResponse executePostRequest(HttpEntity body) throws IOException {
         HttpPost httpPost = new HttpPost(pipelinesIntegrationUrl);
         httpPost.setEntity(body);
         return getHttpClient().execute(httpPost);
