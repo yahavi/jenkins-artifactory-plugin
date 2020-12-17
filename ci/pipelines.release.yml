@@ -14,10 +14,6 @@ pipelines:
         readOnly:
           NEXT_VERSION: 0.0.0
           NEXT_DEVELOPMENT_VERSION: 0.0.x-SNAPSHOT
-          CI: "true"
-          M2_HOME: "/usr/local/apache-maven-3.6.3"
-          JFROG_CLI_BUILD_NAME: "artifactory-jenkins-plugin"
-          JFROG_CLI_BUILD_NUMBER: $run_number
 
     steps:
       - name: Release
@@ -35,6 +31,12 @@ pipelines:
             - restore_cache_files m2_home ${HOME}/.m2
           onExecute:
             - cd $res_jenkinsReleaseGit_resourcePath
+
+            # Set env
+            - export CI=true
+            - export M2_HOME=/usr/local/apache-maven-3.6.3
+            - export JFROG_CLI_BUILD_NAME=artifactory-jenkins-plugin
+            - export JFROG_CLI_BUILD_NUMBER=$run_number
 
             # Configure git
             - git checkout master
