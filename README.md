@@ -53,4 +53,4 @@ Run the integration tests.
 ```
 #### Integration tests results and progress
 The tests results are printed to the console (standard output) when the tests finish.
-Since JUnit however does not indicate which tests are currently running, a file named *tests.log* is created in the current directory, which logs the tests progress.
+Since JUnit however does not indicate which tests are currently running, a file named *tests.log* is created in the current directory, which logs the tests progress.hello
