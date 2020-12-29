@@ -23,7 +23,7 @@ pipelines:
             - name: jenkinsReleaseGit
           integrations:
             - name: ojo
-            - name: github_generic
+            - name: yahav_github_generic
             - name: jenkins_id_rsa
         execution:
           onStart:
@@ -42,7 +42,7 @@ pipelines:
             - git config --global user.user eco-system
             - git config --global user.email eco-system@jfrog.com
             - git checkout master
-            - git remote set-url origin https://$int_github_generic_token@github.com/jfrog/jenkins-artifactory-plugin.git
+            - git remote set-url origin https://$int_github_generic_token@github.com/yahavi/jenkins-artifactory-plugin.git
             - eval "$(ssh-agent)" && ssh-add ~/.ssh/jenkins_id_rsa
             - git remote add upstream git@github.com:jenkinsci/artifactory-plugin.git
 
@@ -70,21 +70,21 @@ pipelines:
             - git push
             - git push --tags
 
-            # Run install and publish
-            - >
-              env -i PATH=$PATH M2_HOME=$M2_HOME HOME=$HOME
-              JFROG_CLI_BUILD_NAME=$JFROG_CLI_BUILD_NAME
-              JFROG_CLI_BUILD_NUMBER=$JFROG_CLI_BUILD_NUMBER
-              ./jfrog rt mvn clean install -U -B
-            - ./jfrog rt bag
-            - ./jfrog rt bp
-
-            # Update next development version
-            - env -i PATH=$PATH M2_HOME=$M2_HOME HOME=$HOME mvn versions:set -DnewVersion=$NEXT_DEVELOPMENT_VERSION -B
-            - git commit -am "[artifactory-release] Next development version [skipRun]"
-
-            # Push changes to Jenkins Git
-            - git push upstream master
+#            # Run install and publish
+#            - >
+#              env -i PATH=$PATH M2_HOME=$M2_HOME HOME=$HOME
+#              JFROG_CLI_BUILD_NAME=$JFROG_CLI_BUILD_NAME
+#              JFROG_CLI_BUILD_NUMBER=$JFROG_CLI_BUILD_NUMBER
+#              ./jfrog rt mvn clean install -U -B
+#            - ./jfrog rt bag
+#            - ./jfrog rt bp
+#
+#            # Update next development version
+#            - env -i PATH=$PATH M2_HOME=$M2_HOME HOME=$HOME mvn versions:set -DnewVersion=$NEXT_DEVELOPMENT_VERSION -B
+#            - git commit -am "[artifactory-release] Next development version [skipRun]"
+#
+#            # Push changes to Jenkins Git
+#            - git push upstream master
 
           onComplete:
             # Show tests in the *Tests* tab

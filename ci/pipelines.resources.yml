@@ -2,8 +2,8 @@ resources:
   - name: jenkinsSnapshotGit
     type: GitRepo
     configuration:
-      path: jfrog/jenkins-artifactory-plugin
-      gitProvider: github
+      path: yahavi/jenkins-artifactory-plugin
+      gitProvider: yahav_github
       buildOn:
         pullRequestCreate: true
       branches:
@@ -14,8 +14,8 @@ resources:
   - name: jenkinsReleaseGit
     type: GitRepo
     configuration:
-      path: jfrog/jenkins-artifactory-plugin
-      gitProvider: github
+      path: yahavi/jenkins-artifactory-plugin
+      gitProvider: yahav_github
       buildOn:
         commit: false
 
