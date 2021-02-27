@@ -1,9 +1,9 @@
 resources:
-  - name: jenkinsSnapshotGit
+  - name: yahavGit
     type: GitRepo
     configuration:
       path: yahavi/jenkins-artifactory-plugin
-      gitProvider: github
+      gitProvider: yahav_github
       buildOn:
         pullRequestCreate: true
       branches:
